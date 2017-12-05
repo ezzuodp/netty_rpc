@@ -3,6 +3,7 @@ package com.ezweb.engine.util;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import org.bouncycastle.asn1.ASN1Sequence;
+import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.util.encoders.Base64;
 
@@ -172,7 +173,7 @@ public abstract class RsaKeyHelper {
 		return output.toString();
 	}
 
-	public static String fmtX509PublicKey(RSAPublicKey key) {
+	public static String fmtPEMPublicKey(RSAPublicKey key) {
 		StringWriter output = new StringWriter();
 
 		ByteBuf byteBuf = Unpooled.wrappedBuffer(key.getEncoded());
@@ -181,6 +182,17 @@ public abstract class RsaKeyHelper {
 		output.append("-----BEGIN PUBLIC KEY-----\n");
 		output.append(base64Buf.toString(UTF8)).append('\n');
 		output.append("-----END PUBLIC KEY-----\n");
+		return output.toString();
+	}
+
+	public static String fmtDERPublicKey(RSAPublicKey key) throws IOException {
+		StringWriter output = new StringWriter();
+
+		ByteBuf base64Buf = io.netty.handler.codec.base64.Base64.encode(null, true);
+
+		output.append("-----BEGIN RSA PUBLIC KEY-----\n");
+		output.append(base64Buf.toString(UTF8)).append('\n');
+		output.append("-----END RSA PUBLIC KEY-----\n");
 		return output.toString();
 	}
 

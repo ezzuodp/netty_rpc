@@ -4,6 +4,7 @@ import com.ezweb.engine.util.RsaKeyHelper;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.security.KeyPair;
 import java.security.interfaces.RSAPublicKey;
 
@@ -17,7 +18,7 @@ import java.security.interfaces.RSAPublicKey;
  */
 public class RsaKeyTest {
 	@Test
-	public void testKey() {
+	public void testKey() throws IOException {
 		String pemData = "" +
 				"-----BEGIN RSA PRIVATE KEY-----\n" +
 				"MIIEogIBAAKCAQEAx7GzoGxs78tow0LIqvJ881EPc0YRycetDZvKR00sGOKLSp/u\n" +
@@ -46,32 +47,32 @@ public class RsaKeyTest {
 				"MIfqcNbvsU8bEKQJk6WffGgK9DFKZIJvQX+Z/SJ1nCLDr+tbwfWI5IqZ/wXBhjCy\n" +
 				"tE/Qiu0WSA7KX/eTSUb2vGtqPDh3L8Vyz8dtvCJP1V15c9f2QP4=\n" +
 				"-----END RSA PRIVATE KEY-----\n";
-		String public_ssh = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCsKWzKo8aEhIkXlSAG2b0S3DgM2ARtxd5P4cHxcxUISqpmoal1Z09+Ys6TdsMEHIcSaGH4gx+R8O/eQHLu42q2ecMRIamSNCQyVF778ARs6die3CBn/bTIwumobtoLksEL2v6H6SrpDQaB4MPpPjNdfZMVaicPZ0bE8c5TlbAeV5j1eexgNalogaKOPHG28G2BGWc86R9dXR0a1n7cda3Yrmy9hHA7gAZ7tC41GZERObtDlBUgAPQq0NcHNPYaNpsbPJEvkCG4BKJo3Dv6CxkrD6tXmoRCEEMkxXQ58ac+PE47i6yycHR8KNahaWUHp/hwArH75jwIrBu3+vZjFcTt cqzuodp@163.com";
+		String public_ssh = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDHsbOgbGzvy2jDQsiq8nzzUQ9zRhHJx60Nm8pHTSwY4otKn+5MmGHv5A6ketGb+MPnFeK8lBsjHTeNpyoKXLu/whoj4UtqhnnowgN9PlQ1cNfhSez1xgVYuLW5B+MYYXj3aaid3+ij9lQo2kfGC2cgP0KW+K6D4uB7vMRmrATe1NFo/G0VXRptmoR1/1nqSKo2rfGEGeW2T+XBR6T5dKPTTpa2BWzmrkzrhjG4fj6KESTL3mMP8AQUAj0FTA9alpFC9NxTQGiG73H4YYvLpcFS8FoxjhOoXllCl7xVRKHQimdbBpl0hiYxGNLMVAwlkOSn8QV+lvzVayskjXjN1FnP cqzuodp@163.com";
 		String public_pem = "" +
 				"-----BEGIN PUBLIC KEY-----\n" +
-				"MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEArClsyqPGhISJF5UgBtm9Etw4DNgEbcXe\n" +
-				"T+HB8XMVCEqqZqGpdWdPfmLOk3bDBByHEmhh+IMfkfDv3kBy7uNqtnnDESGpkjQkMlRe+/AEbOnY\n" +
-				"ntwgZ/20yMLpqG7aC5LBC9r+h+kq6Q0GgeDD6T4zXX2TFWonD2dGxPHOU5WwHleY9XnsYDWpaIGi\n" +
-				"jjxxtvBtgRlnPOkfXV0dGtZ+3HWt2K5svYRwO4AGe7QuNRmRETm7Q5QVIAD0KtDXBzT2GjabGzyR\n" +
-				"L5AhuASiaNw7+gsZKw+rV5qEQhBDJMV0OfGnPjxOO4ussnB0fCjWoWllB6f4cAKx++Y8CKwbt/r2\n" +
-				"YxXE7QIDAQAB\n" +
+				"MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAx7GzoGxs78tow0LIqvJ8\n" +
+				"81EPc0YRycetDZvKR00sGOKLSp/uTJhh7+QOpHrRm/jD5xXivJQbIx03jacqCly7\n" +
+				"v8IaI+FLaoZ56MIDfT5UNXDX4Uns9cYFWLi1uQfjGGF492mond/oo/ZUKNpHxgtn\n" +
+				"ID9Clviug+Lge7zEZqwE3tTRaPxtFV0abZqEdf9Z6kiqNq3xhBnltk/lwUek+XSj\n" +
+				"006WtgVs5q5M64YxuH4+ihEky95jD/AEFAI9BUwPWpaRQvTcU0Bohu9x+GGLy6XB\n" +
+				"UvBaMY4TqF5ZQpe8VUSh0IpnWwaZdIYmMRjSzFQMJZDkp/EFfpb81WsrJI14zdRZ\n" +
+				"zwIDAQAB\n" +
 				"-----END PUBLIC KEY-----\n";
-		{
 
-			KeyPair kp = RsaKeyHelper.parseKeyPair(pemData);
-			System.out.println(kp.getPublic());
-			System.out.println(kp.getPrivate());
-		}
+		KeyPair kp = RsaKeyHelper.parseKeyPair(pemData);
 		{
-			RSAPublicKey pub = RsaKeyHelper.parsePublicKey(public_ssh);
-			String encodePublicKey = RsaKeyHelper.fmtSSHPublicKey(pub, "cqzuodp@163.com");
+			RSAPublicKey pub2 = RsaKeyHelper.parsePublicKey(public_pem);
+			Assert.assertEquals(pub2, kp.getPublic());
+
+			RSAPublicKey pub3 = RsaKeyHelper.parsePublicKey(public_ssh);
+			Assert.assertEquals(pub3, pub2);
+
+			String encodePublicKey = RsaKeyHelper.fmtSSHPublicKey(pub2, "cqzuodp@163.com");
 			Assert.assertEquals(public_ssh, encodePublicKey);
 
-			RSAPublicKey pub2 = RsaKeyHelper.parsePublicKey(public_pem);
-			Assert.assertEquals(pub2, pub);
-
-			String encodeX509 = RsaKeyHelper.fmtX509PublicKey(pub2);
-			Assert.assertEquals(encodeX509, public_pem); // openssl 的 bases64 是64个字符就换行，不是标准的Base64的76个字符+换行，就算找到原因了。
+			String encodePublicPem = RsaKeyHelper.fmtPEMPublicKey(pub2);
+			// openssl 的 bases64 是64个字符就换行，不是标准的Base64的76个字符+换行，总算找到原因了。
+			Assert.assertEquals(encodePublicPem.replaceAll("\n", ""), public_pem.replaceAll("\n", ""));
 		}
 	}
 }
