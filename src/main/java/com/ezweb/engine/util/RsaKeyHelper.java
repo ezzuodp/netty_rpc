@@ -2,8 +2,9 @@ package com.ezweb.engine.util;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import org.bouncycastle.asn1.ASN1OutputStream;
 import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.DERSequence;
+import org.bouncycastle.asn1.DLSequence;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.util.encoders.Base64;
 
@@ -60,7 +61,7 @@ public abstract class RsaKeyHelper {
 
 		try {
 			KeyFactory fact = KeyFactory.getInstance("RSA", "BC");
-			if (type.equals("RSA PRIVATE KEY")) {
+			if (type.equals("RSA PRIVATE KEY")) { // PEM 私钥
 				ASN1Sequence seq = ASN1Sequence.getInstance(content);
 				if (seq.size() != 9) {
 					throw new IllegalArgumentException("Invalid RSA Private Key ASN1 sequence.");
@@ -74,15 +75,7 @@ public abstract class RsaKeyHelper {
 						key.getExponent2(), key.getCoefficient());
 				publicKey = fact.generatePublic(pubSpec);
 				privateKey = fact.generatePrivate(privSpec);
-			} /*else if (type.equals("PUBLIC KEY")) {
-				KeySpec keySpec = new X509EncodedKeySpec(content);
-				publicKey = fact.generatePublic(keySpec);
-			} else if (type.equals("RSA PUBLIC KEY")) {
-				ASN1Sequence seq = ASN1Sequence.getInstance(content);
-				org.bouncycastle.asn1.pkcs.RSAPublicKey key = org.bouncycastle.asn1.pkcs.RSAPublicKey.getInstance(seq);
-				RSAPublicKeySpec pubSpec = new RSAPublicKeySpec(key.getModulus(), key.getPublicExponent());
-				publicKey = fact.generatePublic(pubSpec);
-			} */ else {
+			} else {
 				throw new IllegalArgumentException(type + " is not a supported format");
 			}
 
@@ -136,12 +129,12 @@ public abstract class RsaKeyHelper {
 			final byte[] content = base64Decode(m.group(2));
 			try {
 				KeyFactory fact = KeyFactory.getInstance("RSA", "BC");
-				if (type.equals("RSA PUBLIC KEY")) {
+				if (type.equals("RSA PUBLIC KEY")) { // TODO:可以解，还没有找到方法输出.
 					ASN1Sequence seq = ASN1Sequence.getInstance(content);
 					org.bouncycastle.asn1.pkcs.RSAPublicKey bc_key = org.bouncycastle.asn1.pkcs.RSAPublicKey.getInstance(seq);
 					RSAPublicKeySpec pubSpec = new RSAPublicKeySpec(bc_key.getModulus(), bc_key.getPublicExponent());
 					return (RSAPublicKey) fact.generatePublic(pubSpec);
-				} else if (type.equals("PUBLIC KEY")) {
+				} else if (type.equals("PUBLIC KEY")) { // PEM 格式公钥
 					KeySpec keySpec = new X509EncodedKeySpec(content);
 					return (RSAPublicKey) fact.generatePublic(keySpec);
 				} else {
@@ -173,6 +166,7 @@ public abstract class RsaKeyHelper {
 		return output.toString();
 	}
 
+	// PEM: DER经过base64编码转换为PEM格式
 	public static String fmtPEMPublicKey(RSAPublicKey key) {
 		StringWriter output = new StringWriter();
 
@@ -185,15 +179,9 @@ public abstract class RsaKeyHelper {
 		return output.toString();
 	}
 
-	public static String fmtDERPublicKey(RSAPublicKey key) throws IOException {
-		StringWriter output = new StringWriter();
-
-		ByteBuf base64Buf = io.netty.handler.codec.base64.Base64.encode(null, true);
-
-		output.append("-----BEGIN RSA PUBLIC KEY-----\n");
-		output.append(base64Buf.toString(UTF8)).append('\n');
-		output.append("-----END RSA PUBLIC KEY-----\n");
-		return output.toString();
+	// DER: 原始的RSA Key按照ASN1 DER编码的方式存储
+	public static byte[] fmtDERPublicKey(RSAPublicKey key) {
+		return key.getEncoded();
 	}
 
 	private static byte[] base64Decode(String string) {
