@@ -9,6 +9,8 @@ import org.bouncycastle.asn1.DLSequence;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.util.encoders.Base64;
+import org.bouncycastle.util.io.pem.PemObject;
+import org.bouncycastle.util.io.pem.PemWriter;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -20,6 +22,7 @@ import java.nio.CharBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
 import java.security.*;
+import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.*;
 import java.util.Arrays;
@@ -63,7 +66,7 @@ public abstract class RsaKeyHelper {
 
 		try {
 			KeyFactory fact = KeyFactory.getInstance("RSA", "BC");
-			if (type.equals("RSA PRIVATE KEY")) { // PEM 私钥
+			if ("RSA PRIVATE KEY".equals(type)) { // pkcs#1 格式
 				ASN1Sequence seq = ASN1Sequence.getInstance(content);
 				if (seq.size() != 9) {
 					throw new IllegalArgumentException("Invalid RSA Private Key ASN1 sequence.");
@@ -77,6 +80,9 @@ public abstract class RsaKeyHelper {
 						key.getExponent2(), key.getCoefficient());
 				publicKey = fact.generatePublic(pubSpec);
 				privateKey = fact.generatePrivate(privSpec);
+
+			} else if ("PRIVATE KEY".equalsIgnoreCase(type)) { // TODO: pkcs#8 格式
+				throw new IllegalArgumentException(type + " is not a supported format");
 			} else {
 				throw new IllegalArgumentException(type + " is not a supported format");
 			}
@@ -131,12 +137,12 @@ public abstract class RsaKeyHelper {
 			final byte[] content = base64Decode(m.group(2));
 			try {
 				KeyFactory fact = KeyFactory.getInstance("RSA", "BC");
-				if (type.equals("RSA PUBLIC KEY")) { // TODO:可以解，还没有找到方法输出.
+				if ("RSA PUBLIC KEY".equals(type)) { // pkcs#1 格式
 					ASN1Sequence seq = ASN1Sequence.getInstance(content);
 					org.bouncycastle.asn1.pkcs.RSAPublicKey bc_key = org.bouncycastle.asn1.pkcs.RSAPublicKey.getInstance(seq);
 					RSAPublicKeySpec pubSpec = new RSAPublicKeySpec(bc_key.getModulus(), bc_key.getPublicExponent());
 					return (RSAPublicKey) fact.generatePublic(pubSpec);
-				} else if (type.equals("PUBLIC KEY")) { // PEM 格式公钥
+				} else if ("PUBLIC KEY".equals(type)) { // pkcs#8 格式
 					KeySpec keySpec = new X509EncodedKeySpec(content);
 					return (RSAPublicKey) fact.generatePublic(keySpec);
 				} else {
@@ -168,11 +174,11 @@ public abstract class RsaKeyHelper {
 		return output.toString();
 	}
 
-	// PEM: DER经过base64编码转换为PEM格式(PKCS#8)
-	public static String fmtPEMPublicKey(RSAPublicKey key) {
+	// PEM(PKCS#8, java读取格式)
+	public static String fmtPkcs8PublicKey(RSAPublicKey key) {
 		StringWriter output = new StringWriter();
 
-		ByteBuf byteBuf = Unpooled.wrappedBuffer(fmtDERPublicKey(key));
+		ByteBuf byteBuf = Unpooled.wrappedBuffer(key.getEncoded());
 		ByteBuf base64Buf = io.netty.handler.codec.base64.Base64.encode(byteBuf, true);
 
 		output.append("-----BEGIN PUBLIC KEY-----\n");
@@ -181,31 +187,24 @@ public abstract class RsaKeyHelper {
 		return output.toString();
 	}
 
-	// DER: 原始的RSA Key按照ASN1 DER编码的方式存储
-	public static byte[] fmtDERPublicKey(RSAPublicKey key) {
-		return key.getEncoded();
-	}
-
+	// PEM(PKCS#1, openssl格式)
 	public static String fmtPkcs1PublicKey(RSAPublicKey pub) {
-
-		byte[] publicKeyPKCS1 = null;
 		try {
-			byte[] pubBytes = pub.getEncoded();
-			SubjectPublicKeyInfo spkInfo = SubjectPublicKeyInfo.getInstance(pubBytes);
+			SubjectPublicKeyInfo spkInfo = SubjectPublicKeyInfo.getInstance(pub.getEncoded());
 			ASN1Primitive primitive = spkInfo.parsePublicKey();
-			publicKeyPKCS1 = primitive.getEncoded();
+			byte[] publicKeyPKCS1 = primitive.getEncoded();
+
+			StringWriter output = new StringWriter();
+			ByteBuf byteBuf = Unpooled.wrappedBuffer(publicKeyPKCS1);
+			ByteBuf base64Buf = io.netty.handler.codec.base64.Base64.encode(byteBuf, true);
+
+			output.append("-----BEGIN RSA PUBLIC KEY-----\n");
+			output.append(base64Buf.toString(UTF8)).append('\n');
+			output.append("-----END RSA PUBLIC KEY-----\n");
+			return output.toString();
 		} catch (IOException e) {
-			e.printStackTrace();
+			return "";
 		}
-
-		StringWriter output = new StringWriter();
-		ByteBuf byteBuf = Unpooled.wrappedBuffer(publicKeyPKCS1);
-		ByteBuf base64Buf = io.netty.handler.codec.base64.Base64.encode(byteBuf, true);
-
-		output.append("-----BEGIN RSA PUBLIC KEY-----\n");
-		output.append(base64Buf.toString(UTF8)).append('\n');
-		output.append("-----END RSA PUBLIC KEY-----\n");
-		return output.toString();
 	}
 
 	private static byte[] base64Decode(String string) {

@@ -70,7 +70,7 @@ public class RsaKeyTest {
 			String encodePublicKey = RsaKeyHelper.fmtSSHPublicKey(pub2, "cqzuodp@163.com");
 			Assert.assertEquals(public_ssh, encodePublicKey);
 
-			String encodePublicPem = RsaKeyHelper.fmtPEMPublicKey(pub2);
+			String encodePublicPem = RsaKeyHelper.fmtPkcs8PublicKey(pub2);
 			// openssl 的 bases64 是64个字符就换行，不是标准的Base64的76个字符+换行，总算找到原因了。
 			Assert.assertEquals(encodePublicPem.replaceAll("\n", ""), public_pem.replaceAll("\n", ""));
 

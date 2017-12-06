@@ -10,7 +10,7 @@ import org.bouncycastle.util.io.pem.PemWriter;
 The code snippets below have been checked and found working with Bouncy Castle 1.52.
 
 1.1 >> Private key
-1.1.1 >> Convert private key from PKCS8 to PKCS1:
+ A: >> Convert private key from PKCS#8 to PKCS#1:
 
 	PrivateKey priv = pair.getPrivate();
 	byte[] privBytes = priv.getEncoded();
@@ -19,8 +19,6 @@ The code snippets below have been checked and found working with Bouncy Castle 1
 	ASN1Encodable encodable = pkInfo.parsePrivateKey();
 	ASN1Primitive primitive = encodable.toASN1Primitive();
 	byte[] privateKeyPKCS1 = primitive.getEncoded();
-
-1.1.2 >>  Convert private key in PKCS1 to PEM:
 
 	PemObject pemObject = new PemObject("RSA PRIVATE KEY", privateKeyPKCS1);
 	StringWriter stringWriter = new StringWriter();
@@ -35,7 +33,7 @@ Check with command line OpenSSL that the key format is as expected:
 
 1.2 >> Public key
 
-1.2.1 >> Convert public key from X.509 SubjectPublicKeyInfo to PKCS1:
+ A: >> Convert public key from X.509 SubjectPublicKeyInfo to PKCS#1:
 
 	PublicKey pub = pair.getPublic();
 	byte[] pubBytes = pub.getEncoded();
@@ -43,8 +41,6 @@ Check with command line OpenSSL that the key format is as expected:
 	SubjectPublicKeyInfo spkInfo = SubjectPublicKeyInfo.getInstance(pubBytes);
 	ASN1Primitive primitive = spkInfo.parsePublicKey();
 	byte[] publicKeyPKCS1 = primitive.getEncoded();
-
-1.2.1 >>  Convert public key in PKCS1 to PEM:
 
 	PemObject pemObject = new PemObject("RSA PUBLIC KEY", publicKeyPKCS1);
 	StringWriter stringWriter = new StringWriter();
