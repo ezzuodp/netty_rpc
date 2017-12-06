@@ -56,7 +56,7 @@ Check with command line OpenSSL that the key format is as expected:
 Check with command line OpenSSL that the key format is as expected:
 	$ openssl rsa -in rsa_public_key.pem -RSAPublicKey_in -noout -text
 
-==========================================
+========================================================================================================================
 1). RSA Public Key file (PKCS#1)
 
 The RSA Public key PEM file is specific for RSA keys.
@@ -72,7 +72,7 @@ Within the base64 encoded data the following DER structure is present:
 		    publicExponent    INTEGER   -- e
 		}
 
-==============================
+========================================================================================================================
 2). Public Key file (PKCS#8)
 Because RSA is not used exclusively inside X509 and SSL/TLS, a more generic key format is available in the form of PKCS#8,
 that identifies the type of public key and contains the relevant data.
@@ -94,8 +94,14 @@ Within the base64 encoded data the following DER structure is present:
 		}
 So for an RSA public key, the OID is 1.2.840.113549.1.1.1 and there is a RSAPublicKey as the PublicKey key data bitstring.
 
-==============================
+========================================================================================================================
 4). RSA Private Key file (PKCS#1)
+
+$ openssl genrsa -out private.pem 1024
+
+##  pkcs#8 转为 pkcs#1
+$ openssl pkcs8 -in pkcs8.pem -nocrypt -out pkcs1.pem
+
 The RSA private key PEM file is specific for RSA keys.
 
 It starts and ends with the tags:
@@ -117,8 +123,11 @@ Within the base64 encoded data the following DER structure is present:
 		  otherPrimeInfos   OtherPrimeInfos OPTIONAL
 		}
 
-==============================
+========================================================================================================================
 4). Private Key file (PKCS#8)
+##  pkcs#8 转为 pkcs#1
+$ openssl pkcs8 -topk8 -inform PEM -in private.pem -outform pem -nocrypt -out pkcs8.pem
+
 Because RSA is not used exclusively inside X509 and SSL/TLS, a more generic key format is available in the form of PKCS#8,
 that identifies the type of private key and contains the relevant data.
 The unencrypted PKCS#8 encoded data starts and ends with the tags:
@@ -139,20 +148,3 @@ Within the base64 encoded data the following DER structure is present:
 		  parameters      ANY DEFINED BY algorithm OPTIONAL
 		}
 So for an RSA private key, the OID is 1.2.840.113549.1.1.1 and there is a RSAPrivateKey as the PrivateKey key data bitstring.
-
-The encrypted PKCS#8 encoded data start and ends with the tags:
-
-		-----BEGIN ENCRYPTED PRIVATE KEY-----
-		BASE64 ENCODED DATA
-		-----END ENCRYPTED PRIVATE KEY-----
-
-Within the base64 encoded data the following DER structure is present:
-
-		EncryptedPrivateKeyInfo ::= SEQUENCE {
-		  encryptionAlgorithm  EncryptionAlgorithmIdentifier,
-		  encryptedData        EncryptedData
-		}
-		EncryptionAlgorithmIdentifier ::= AlgorithmIdentifier
-		EncryptedData ::= OCTET STRING
-
-The EncryptedData OCTET STRING is a PKCS#8 PrivateKeyInfo (see above).
