@@ -11,7 +11,7 @@ apply from: file("${projectDir}/gradle/shared.gradle")
 
 dependencies {
 	compile group: 'com.google.guava', name: 'guava', version: '19.0'
-	compile group: 'io.netty', name: 'netty-all', version: '4.0.33.Final'
+	compile group: 'io.netty', name: 'netty-all', version: '4.1.17.Final'
 	compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.21'
 	compile group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: '2.7'
 	compile group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.7'

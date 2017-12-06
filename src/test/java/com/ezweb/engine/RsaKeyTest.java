@@ -73,6 +73,10 @@ public class RsaKeyTest {
 			String encodePublicPem = RsaKeyHelper.fmtPEMPublicKey(pub2);
 			// openssl 的 bases64 是64个字符就换行，不是标准的Base64的76个字符+换行，总算找到原因了。
 			Assert.assertEquals(encodePublicPem.replaceAll("\n", ""), public_pem.replaceAll("\n", ""));
+
+			String pkcs$1Pub = RsaKeyHelper.fmtPkcs1PublicKey(pub2);
+			RSAPublicKey pub4 = RsaKeyHelper.parsePublicKey(pkcs$1Pub);
+			Assert.assertEquals(pub4, pub2);
 		}
 	}
 }

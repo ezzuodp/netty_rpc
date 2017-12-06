@@ -3,8 +3,10 @@ package com.ezweb.engine.util;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import org.bouncycastle.asn1.ASN1OutputStream;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.DLSequence;
+import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.util.encoders.Base64;
 
@@ -166,11 +168,11 @@ public abstract class RsaKeyHelper {
 		return output.toString();
 	}
 
-	// PEM: DER经过base64编码转换为PEM格式
+	// PEM: DER经过base64编码转换为PEM格式(PKCS#8)
 	public static String fmtPEMPublicKey(RSAPublicKey key) {
 		StringWriter output = new StringWriter();
 
-		ByteBuf byteBuf = Unpooled.wrappedBuffer(key.getEncoded());
+		ByteBuf byteBuf = Unpooled.wrappedBuffer(fmtDERPublicKey(key));
 		ByteBuf base64Buf = io.netty.handler.codec.base64.Base64.encode(byteBuf, true);
 
 		output.append("-----BEGIN PUBLIC KEY-----\n");
@@ -182,6 +184,28 @@ public abstract class RsaKeyHelper {
 	// DER: 原始的RSA Key按照ASN1 DER编码的方式存储
 	public static byte[] fmtDERPublicKey(RSAPublicKey key) {
 		return key.getEncoded();
+	}
+
+	public static String fmtPkcs1PublicKey(RSAPublicKey pub) {
+
+		byte[] publicKeyPKCS1 = null;
+		try {
+			byte[] pubBytes = pub.getEncoded();
+			SubjectPublicKeyInfo spkInfo = SubjectPublicKeyInfo.getInstance(pubBytes);
+			ASN1Primitive primitive = spkInfo.parsePublicKey();
+			publicKeyPKCS1 = primitive.getEncoded();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		StringWriter output = new StringWriter();
+		ByteBuf byteBuf = Unpooled.wrappedBuffer(publicKeyPKCS1);
+		ByteBuf base64Buf = io.netty.handler.codec.base64.Base64.encode(byteBuf, true);
+
+		output.append("-----BEGIN RSA PUBLIC KEY-----\n");
+		output.append(base64Buf.toString(UTF8)).append('\n');
+		output.append("-----END RSA PUBLIC KEY-----\n");
+		return output.toString();
 	}
 
 	private static byte[] base64Decode(String string) {
