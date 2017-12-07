@@ -6,11 +6,11 @@ import com.ezweb.engine.util.RemotingUtil;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.*;
+import io.netty.channel.epoll.EpollEventLoopGroup;
+import io.netty.channel.epoll.EpollServerSocketChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.handler.logging.LogLevel;
-import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.handler.timeout.IdleStateHandler;
@@ -73,15 +73,19 @@ public class NettyServer {
 	}
 
 	private ServerBootstrap configServer() {
-		bossGroup = new NioEventLoopGroup(1, new DefaultThreadFactory("NettyBossGroup"));
-		workerGroup = new NioEventLoopGroup(3, new DefaultThreadFactory("NettyWorkerSelectorGroup"));
+		if (RemotingUtil.isLinuxPlatform()) {
+			bossGroup = new EpollEventLoopGroup(1, new DefaultThreadFactory("NettyBossGroup"));
+			workerGroup = new EpollEventLoopGroup(3, new DefaultThreadFactory("NettyWorkerSelectorGroup"));
+		} else {
+			bossGroup = new NioEventLoopGroup(1, new DefaultThreadFactory("NettyBossGroup"));
+			workerGroup = new NioEventLoopGroup(3, new DefaultThreadFactory("NettyWorkerSelectorGroup"));
+		}
 		defaultEventExecutorGroup = new DefaultEventExecutorGroup(8, new DefaultThreadFactory("NettyExecGroup"));
 
 		ServerBootstrap b = new ServerBootstrap();
 		b.group(bossGroup, workerGroup)
-				.channel(NioServerSocketChannel.class)
+				.channel(RemotingUtil.isLinuxPlatform() ? EpollServerSocketChannel.class : NioServerSocketChannel.class)
 				.option(ChannelOption.SO_BACKLOG, 1024)
-				.option(ChannelOption.SO_KEEPALIVE, true)
 				.option(ChannelOption.SO_REUSEADDR, true)
 				.childOption(ChannelOption.SO_KEEPALIVE, true)
 				.childOption(ChannelOption.TCP_NODELAY, true)
@@ -94,10 +98,10 @@ public class NettyServer {
 			public void initChannel(SocketChannel ch) throws Exception {
 				ch.pipeline().addLast(
 						defaultEventExecutorGroup,
-						new LoggingHandler("com.ezweb.SERVLER", LogLevel.DEBUG),
+						// new LoggingHandler("com.ezweb.SERVLER", LogLevel.DEBUG),
 						new NettyDecoder(),
 						new NettyEncoder(),
-						new IdleStateHandler(0, 0, 180, TimeUnit.SECONDS),
+						new IdleStateHandler(0, 0, 120, TimeUnit.SECONDS),
 						new NettyConnectManageHandler(),
 						serverHandlerCreator.create()
 				);
@@ -115,55 +119,54 @@ public class NettyServer {
 	}
 
 	class NettyConnectManageHandler extends ChannelDuplexHandler {
-	        @Override
-	        public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
-	            final String remoteAddress = RemotingUtil.parseChannelRemoteAddr(ctx.channel());
-		        logger.info("NETTY SERVER PIPELINE: channelRegistered {}", remoteAddress);
-	            super.channelRegistered(ctx);
-	        }
+		@Override
+		public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
+			final String remoteAddress = RemotingUtil.parseChannelRemoteAddr(ctx.channel());
+			logger.info("NETTY SERVER PIPELINE: channelRegistered {}", remoteAddress);
+			super.channelRegistered(ctx);
+		}
 
-	        @Override
-	        public void channelUnregistered(ChannelHandlerContext ctx) throws Exception {
-	            final String remoteAddress = RemotingUtil.parseChannelRemoteAddr(ctx.channel());
-		        logger.info("NETTY SERVER PIPELINE: channelUnregistered, the channel[{}]", remoteAddress);
-	            super.channelUnregistered(ctx);
-	        }
+		@Override
+		public void channelUnregistered(ChannelHandlerContext ctx) throws Exception {
+			final String remoteAddress = RemotingUtil.parseChannelRemoteAddr(ctx.channel());
+			logger.info("NETTY SERVER PIPELINE: channelUnregistered, the channel[{}]", remoteAddress);
+			super.channelUnregistered(ctx);
+		}
 
-	        @Override
-	        public void channelActive(ChannelHandlerContext ctx) throws Exception {
-	            final String remoteAddress = RemotingUtil.parseChannelRemoteAddr(ctx.channel());
-		        logger.info("NETTY SERVER PIPELINE: channelActive, the channel[{}]", remoteAddress);
-	            super.channelActive(ctx);
-	        }
+		@Override
+		public void channelActive(ChannelHandlerContext ctx) throws Exception {
+			final String remoteAddress = RemotingUtil.parseChannelRemoteAddr(ctx.channel());
+			logger.info("NETTY SERVER PIPELINE: channelActive, the channel[{}]", remoteAddress);
+			super.channelActive(ctx);
+		}
 
-	        @Override
-	        public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-	            final String remoteAddress = RemotingUtil.parseChannelRemoteAddr(ctx.channel());
-		        logger.info("NETTY SERVER PIPELINE: channelInactive, the channel[{}]", remoteAddress);
-	            super.channelInactive(ctx);
-	        }
+		@Override
+		public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+			final String remoteAddress = RemotingUtil.parseChannelRemoteAddr(ctx.channel());
+			logger.info("NETTY SERVER PIPELINE: channelInactive, the channel[{}]", remoteAddress);
+			super.channelInactive(ctx);
+		}
 
-	        @Override
-	        public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
-	            if (evt instanceof IdleStateEvent) {
-	                IdleStateEvent event = (IdleStateEvent) evt;
-	                if (event.state().equals(IdleState.ALL_IDLE)) {
-	                    final String remoteAddress = RemotingUtil.parseChannelRemoteAddr(ctx.channel());
-		                logger.warn("NETTY SERVER PIPELINE: IDLE exception [{}]", remoteAddress);
-	                    RemotingUtil.closeChannel(ctx.channel());
-	                }
-	            }
+		@Override
+		public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+			if (evt instanceof IdleStateEvent) {
+				IdleStateEvent event = (IdleStateEvent) evt;
+				if (event.state().equals(IdleState.ALL_IDLE)) {
+					final String remoteAddress = RemotingUtil.parseChannelRemoteAddr(ctx.channel());
+					logger.warn("NETTY SERVER PIPELINE: IDLE exception [{}]", remoteAddress);
+					RemotingUtil.closeChannel(ctx.channel());
+				}
+			}
 
-	            ctx.fireUserEventTriggered(evt);
-	        }
+			super.userEventTriggered(ctx, evt);
+		}
 
-	        @Override
-	        public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-	            final String remoteAddress = RemotingUtil.parseChannelRemoteAddr(ctx.channel());
-		        logger.warn("NETTY SERVER PIPELINE: exceptionCaught {}", remoteAddress);
-		        logger.warn("NETTY SERVER PIPELINE: exceptionCaught exception.", cause);
+		@Override
+		public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+			final String remoteAddress = RemotingUtil.parseChannelRemoteAddr(ctx.channel());
+			logger.warn("NETTY SERVER PIPELINE: exceptionCaught {}, exception:", remoteAddress, cause);
 
-		        RemotingUtil.closeChannel(ctx.channel());
-	        }
-	    }
+			RemotingUtil.closeChannel(ctx.channel());
+		}
+	}
 }

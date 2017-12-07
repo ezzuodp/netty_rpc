@@ -53,37 +53,6 @@ public class RemotingUtil {
 		return isWindowsPlatform;
 	}
 
-	public static Selector openSelector() throws IOException {
-		Selector result = null;
-
-		if (isLinuxPlatform()) {
-			try {
-				final Class<?> providerClazz = Class.forName("sun.nio.ch.EPollSelectorProvider");
-				if (providerClazz != null) {
-					try {
-						final Method method = providerClazz.getMethod("provider");
-						if (method != null) {
-							final SelectorProvider selectorProvider = (SelectorProvider) method.invoke(null);
-							if (selectorProvider != null) {
-								result = selectorProvider.openSelector();
-							}
-						}
-					} catch (final Exception e) {
-						logger.warn("Open ePoll Selector for linux platform exception", e);
-					}
-				}
-			} catch (final Exception e) {
-				// ignore
-			}
-		}
-
-		if (result == null) {
-			result = Selector.open();
-		}
-
-		return result;
-	}
-
 	public static boolean isLinuxPlatform() {
 		return isLinuxPlatform;
 	}
@@ -149,13 +118,11 @@ public class RemotingUtil {
 		SocketChannel sc = null;
 		try {
 			sc = SocketChannel.open();
-			sc.configureBlocking(true);
 			sc.socket().setSoLinger(false, -1);
 			sc.socket().setTcpNoDelay(true);
 			sc.socket().setReceiveBufferSize(1024 * 64);
 			sc.socket().setSendBufferSize(1024 * 64);
 			sc.socket().connect(remote, timeoutMillis);
-			sc.configureBlocking(false);
 			return sc;
 		} catch (Exception e) {
 			if (sc != null) {
