@@ -1,6 +1,7 @@
 package com.ezweb.engine.client;
 
 import com.ezweb.engine.CustTMessage;
+import com.ezweb.engine.CustTType;
 import com.ezweb.engine.NettyDecoder;
 import com.ezweb.engine.NettyEncoder;
 import com.ezweb.engine.exception.TSendRequestException;
@@ -16,6 +17,7 @@ import io.netty.util.concurrent.DefaultThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.nio.ByteBuffer;
 import java.util.concurrent.*;
 
 /**
@@ -33,6 +35,8 @@ public class NettyClient {
 	private Channel channel = null;
 	// 缓存所有对外请求
 	protected final ConcurrentHashMap<Integer, ResponseFuture> responseTable = new ConcurrentHashMap<>(256);
+	// 心跳定时器
+	private ScheduledExecutorService heatbeatExe;
 
 	public NettyClient() {
 		this.eventLoopGroupWorker = new NioEventLoopGroup(1, new DefaultThreadFactory("NettyClientSelector"));
@@ -61,6 +65,9 @@ public class NettyClient {
 		try {
 			channelFuture.sync();
 			logger.info("connect {}:{} ok.", inetHost, inetPort);
+
+			heatbeatExe = Executors.newScheduledThreadPool(1, new DefaultThreadFactory("netty-client-heartbeat", true));
+			heatbeatExe.scheduleAtFixedRate(new NettyHeatbeatTask(), 60, 60, TimeUnit.SECONDS);
 		} catch (Exception e) {
 			logger.error("connect {}:{} error：", inetHost, inetPort, e);
 		}
@@ -68,6 +75,7 @@ public class NettyClient {
 
 	public void close() {
 		logger.info("close channel:{}", this.channel);
+		heatbeatExe.shutdown();
 		Future<?> f = this.eventLoopGroupWorker.shutdownGracefully();
 		while (!f.isDone()) {
 			try {
@@ -107,6 +115,8 @@ public class NettyClient {
 			if (responseFuture != null) {
 				logger.debug("receive request id:{} response data.", id);
 
+				// TODO:可以检查返回的msg.type == REPLY
+
 				responseFuture.setResponse(msg);
 				responseFuture.release();           // 发出通知,可以读取response了.
 
@@ -114,6 +124,21 @@ public class NettyClient {
 			} else {
 				logger.warn("receive request id:{} response, but it's not in.", id);
 			}
+		}
+	}
+
+	class NettyHeatbeatTask implements Runnable {
+		private byte[] TIME = ("PING").getBytes();
+
+		public NettyHeatbeatTask() {
+		}
+
+		@Override
+		public void run() {
+			CustTMessage custTMessage = CustTMessage.newRequestMessage();
+			custTMessage.setType(CustTType.ONEWAY);
+			custTMessage.setBody(ByteBuffer.wrap(TIME));
+			writeReqImpl(custTMessage);
 		}
 	}
 
@@ -194,6 +219,19 @@ public class NettyClient {
 
 	private ResponseFuture writeReqImpl(CustTMessage request) {
 		if (!channel.isActive()) throw new TSendRequestException("channel is closed.");
+		if (request.getType() == CustTType.ONEWAY) {
+			channel.writeAndFlush(request).addListener(new ChannelFutureListener() {
+				@Override
+				public void operationComplete(ChannelFuture future) throws Exception {
+					if (future.isSuccess()) {
+						return;
+					}
+					logger.warn("send a request to channel <{}> failed.\nREQ:{}", future.channel(), request);
+				}
+			});
+			return null;
+		}
+
 		final ResponseFuture responseFuture = new ResponseFuture(request.getSeqId());
 		responseTable.put(responseFuture.getId(), responseFuture);
 		channel.writeAndFlush(request).addListener(new ChannelFutureListener() {

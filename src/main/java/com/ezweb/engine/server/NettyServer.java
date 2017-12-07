@@ -81,8 +81,9 @@ public class NettyServer {
 		b.group(bossGroup, workerGroup)
 				.channel(NioServerSocketChannel.class)
 				.option(ChannelOption.SO_BACKLOG, 1024)
+				.option(ChannelOption.SO_KEEPALIVE, true)
 				.option(ChannelOption.SO_REUSEADDR, true)
-				.option(ChannelOption.SO_KEEPALIVE, false)
+				.childOption(ChannelOption.SO_KEEPALIVE, true)
 				.childOption(ChannelOption.TCP_NODELAY, true)
 				//.childOption(ChannelOption.SO_SNDBUF, nettyServerConfig.getServerSocketSndBufSize())
 				//.childOption(ChannelOption.SO_RCVBUF, nettyServerConfig.getServerSocketRcvBufSize())
@@ -96,7 +97,7 @@ public class NettyServer {
 						new LoggingHandler("com.ezweb.SERVLER", LogLevel.DEBUG),
 						new NettyDecoder(),
 						new NettyEncoder(),
-						new IdleStateHandler(0, 0, 10, TimeUnit.SECONDS),
+						new IdleStateHandler(0, 0, 180, TimeUnit.SECONDS),
 						new NettyConnectManageHandler(),
 						serverHandlerCreator.create()
 				);

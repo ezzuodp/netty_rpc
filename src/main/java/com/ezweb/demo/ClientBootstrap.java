@@ -81,11 +81,11 @@ public class ClientBootstrap {
 					}
 				}
 				timeResultFuture.whenCompleteAsync(new ConsumerImpl(i), async_pool);
-				if (j % 32 == 0) TimeUnit.MILLISECONDS.sleep(100L); // 并发32个.
+				if (j % 32 == 0) TimeUnit.SECONDS.sleep(12L); // 并发32个.
 			}
 		}
 
-		TimeUnit.MILLISECONDS.sleep(1000L);
+		TimeUnit.SECONDS.sleep(240L);
 
 		socket_client.close();
 	}

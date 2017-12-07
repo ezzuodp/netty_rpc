@@ -40,11 +40,7 @@ public class RpcProtocolProcessorImpl implements RpcProtocolProcessor {
 
 	@Override
 	public void doProcessOneWay(CustTMessage reqmsg) throws Exception {
-		RpcProtocol rpcProtocol = getRpcProtocol(reqmsg.getProtoType());
-		RpcHandler rpcHandler = getRpcHandler(reqmsg.getProtoType());
-
-		RpcRequest req = rpcProtocol.decodeReq(reqmsg.getBody());
-		rpcHandler.doRequest(req);
+		// one way 请求直接不处理
 	}
 
 	@Override
