@@ -12,8 +12,7 @@ message EchoRequest {
 message EchoResponse {
     string message = 1;
 }
-/*
-service EchoServer {
+
+service EchoService {
     rpc Echo(EchoRequest) returns(EchoResponse);
 }
-*/
