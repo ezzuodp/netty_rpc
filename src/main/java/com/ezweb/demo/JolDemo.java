@@ -36,6 +36,20 @@ public class JolDemo {
 		     12     4        (loss due to the next object alignment)
 		Instance size: 16 bytes
 		Space losses: 0 bytes internal + 4 bytes external = 4 bytes total
+	//--------------------------------------------------------------------------------------------
+	typedef class   markOopDesc*  markOop;
+	class oopDesc {
+		  volatile markOop  _mark; // 指针:8个字节
+		  union _metadata {
+		    Klass*      _klass;    // 指针:8个字节
+		    narrowKlass _compressed_klass; // jint32:4个字节
+		  } _metadata;
+	 }
+	 class markOopDesc: public oopDesc {
+	      uintptr_t value() const { return (uintptr_t) this; }
+	 }
+	 // 所以对象头未压缩时:8+8=16个字节，压缩后：8+4=12个字节 .
+	 //--------------------------------------------------------------------------------------------
 		 */
 		synchronized (o) {
 			ClassData classData = ClassData.parseInstance(o);
