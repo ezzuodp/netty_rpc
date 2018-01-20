@@ -1,7 +1,6 @@
 package com.ezweb.demo;
 
 import org.openjdk.jol.info.ClassData;
-import org.openjdk.jol.info.ClassLayout;
 import org.openjdk.jol.layouters.CurrentLayouter;
 
 /**
@@ -14,8 +13,6 @@ public class JolDemo {
 	// 这些属性都按照各自的单位对齐。
 	//
 	static class Item {
-		private String head;
-		private String []xxhead;
 	}
 	/*
 	0. 不论32还是64位，对象字节都是以8字节为padding。
@@ -32,29 +29,51 @@ public class JolDemo {
 	 */
 
 	public static void main(String[] args) {
-		ClassData clsData = ClassData.parseInstance(new Item[0]);
+		/*
+		com.ezweb.demo.JolDemo$Item object internals:
+		 OFFSET  SIZE   TYPE DESCRIPTION                               VALUE
+		      0     4        (object header)                           01 00 00 00 (00000001 00000000 00000000 00000000) (1)
+		      4     4        (object header)                           00 00 00 00 (00000000 00000000 00000000 00000000) (0)
+		      8     4        (object header)                           05 c1 00 f8 (00000101 11000001 00000000 11111000) (-134168315)
+		     12     4        (loss due to the next object alignment)
+		Instance size: 16 bytes
+		Space losses: 0 bytes internal + 4 bytes external = 4 bytes total
 
-		CurrentLayouter currentLayouter = new CurrentLayouter();
-		ClassLayout classLayout = currentLayouter.layout(clsData);
-		System.out.println(classLayout.toPrintable());
-		/*
-		[Lcom.ezweb.demo.JolDemo$Item; object internals:
-		 OFFSET  SIZE                          TYPE DESCRIPTION                               VALUE
-		      0     4                               (object header)                           01 00 00 00 (00000001 00000000 00000000 00000000) (1)
-		      4     4                               (object header)                           00 00 00 00 (00000000 00000000 00000000 00000000) (0)
-		      8     4                               (object header)                           44 c1 00 20 (01000100 11000001 00000000 00100000) (536920388)
-		     12     4                               (object header)                           00 00 00 00 (00000000 00000000 00000000 00000000) (0)
-		     16     0   com.ezweb.demo.JolDemo$Item JolDemo$Item;.<elements>                  N/A
+		com.ezweb.demo.JolDemo$Item object internals:
+		 OFFSET  SIZE   TYPE DESCRIPTION                               VALUE
+		      0     4        (object header)                           88 f2 f8 02 (10001000 11110010 11111000 00000010) (49869448)
+		      4     4        (object header)                           00 00 00 00 (00000000 00000000 00000000 00000000) (0)
+		      8     4        (object header)                           05 c1 00 f8 (00000101 11000001 00000000 11111000) (-134168315)
+		     12     4        (loss due to the next object alignment)
+		Instance size: 16 bytes
+		Space losses: 0 bytes internal + 4 bytes external = 4 bytes total
+
+		//--------------------------------------------------------------------------------------------
+		typedef class   markOopDesc*  markOop;
+		class oopDesc {
+			  volatile markOop  _mark; // 指针:8个字节
+			  union _metadata {
+			    Klass*      _klass;    // 指针:8个字节
+			    narrowKlass _compressed_klass; // jint32:4个字节
+			  } _metadata;
+		 }
+		 class markOopDesc: public oopDesc {
+		      uintptr_t value() const { return (uintptr_t) this; }
+		 }
+		 // 所以对象头未压缩时:8+8=16个字节，压缩后：8+4=12个字节 .
+		 //--------------------------------------------------------------------------------------------
+
 		 */
-		/*
-				 OFFSET  SIZE                          TYPE DESCRIPTION                               VALUE
-		      0     4                               (object header)                           01 00 00 00 (00000001 00000000 00000000 00000000) (1)
-		      4     4                               (object header)                           00 00 00 00 (00000000 00000000 00000000 00000000) (0)
-		      8     4                               (object header)                           40 37 99 28 (01000000 00110111 10011001 00101000) (681129792)
-		     12     4                               (object header)                           c0 7f 00 00 (11000000 01111111 00000000 00000000) (32704)
-		     16     4                               (object header)                           00 00 00 00 (00000000 00000000 00000000 00000000) (0)
-		     20     4                               (alignment/padding gap)
-		     24     0   com.ezweb.demo.JolDemo$Item JolDemo$Item;.<elements>                  N/A
-		 */
+		Item o = new Item();
+		synchronized (o) {
+			ClassData classData = ClassData.parseInstance(o);
+			CurrentLayouter currentLayouter = new CurrentLayouter();
+			System.out.println(currentLayouter.layout(classData).toPrintable());
+		}
+		{
+			ClassData classData = ClassData.parseInstance(o);
+			CurrentLayouter currentLayouter = new CurrentLayouter();
+			System.out.println(currentLayouter.layout(classData).toPrintable());
+		}
 	}
 }
