@@ -2,17 +2,17 @@ package com.ezweb.demo;
 
 import org.openjdk.jol.info.ClassData;
 import org.openjdk.jol.layouters.CurrentLayouter;
+import sun.misc.Contended;
 
 /**
  * @author : zuodp
  * @version : 1.10
  */
 public class JolDemo {
-	//
-	// 类属性按照如下优先级进行排列：长整型和双精度类型；整型和浮点型；字符和短整型；字节类型和布尔类型，最后是引用类型。
-	// 这些属性都按照各自的单位对齐。
-	//
 	static class Item {
+		// 要注意的是user classpath使用此注解默认是无效的，需要在jvm启动时设置-XX:-RestrictContended
+		@Contended
+		public volatile long valueA;
 	}
 	/*
 	0. 不论32还是64位，对象字节都是以8字节为padding。
@@ -64,12 +64,7 @@ public class JolDemo {
 		 //--------------------------------------------------------------------------------------------
 
 		 */
-		Item o = new Item();
-		synchronized (o) {
-			ClassData classData = ClassData.parseInstance(o);
-			CurrentLayouter currentLayouter = new CurrentLayouter();
-			System.out.println(currentLayouter.layout(classData).toPrintable());
-		}
+		Object o = new Item();
 		{
 			ClassData classData = ClassData.parseInstance(o);
 			CurrentLayouter currentLayouter = new CurrentLayouter();
