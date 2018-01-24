@@ -15,7 +15,7 @@
                      filePattern="${log-path}/$${date:yyyy-MM}/app_${sys:applicationName}_%d{yyyy-MM-dd-HH}_%i.log.gz">
             <PatternLayout>
                 <Pattern>
-                    %d{yyyy-MM-dd HH:mm:ss.SSS} [%-5level] [%t] %c{1} - %msg%n
+                    %d{yyyy-MM-dd HH:mm:ss.SSS} [%-5level] [%t] %c{1} - [TxId:%X{TxId}] %msg%n
                 </Pattern>
             </PatternLayout>
             <Policies>
@@ -31,7 +31,7 @@
         Logger使用<asyncRoot> or <asyncLogger>
     -->
     <Loggers>
-        <AsyncLogger name="com.ezweb" level="info" additivity="true">
+        <AsyncLogger name="com.ezweb" level="info" additivity="false">
             <AppenderRef ref="App-File-Appender"/>
         </AsyncLogger>
         <Root level="info">

@@ -11,6 +11,9 @@ import com.ezweb.engine.rpc.server.RpcServerHandlerCreator;
 import com.ezweb.engine.server.NettyServer;
 import com.ezweb.demo.simple.Hello;
 import com.ezweb.demo.simple.HelloImpl;
+import org.slf4j.MDC;
+
+import java.util.UUID;
 
 /**
  * @author : zuodp
