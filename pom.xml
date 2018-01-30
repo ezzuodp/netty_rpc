@@ -107,6 +107,13 @@
             <version>0.9</version>
         </dependency>
 
+        <!-- diff-lcs算法 -->
+        <dependency>
+            <groupId>com.googlecode.java-diff-utils</groupId>
+            <artifactId>diffutils</artifactId>
+            <version>1.3.0</version>
+        </dependency>
+
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
