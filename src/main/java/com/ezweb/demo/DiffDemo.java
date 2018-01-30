@@ -1,8 +1,13 @@
 package com.ezweb.demo;
 
 import com.google.common.collect.Lists;
+import difflib.DiffRow;
+import difflib.DiffRowGenerator;
 import difflib.DiffUtils;
 import difflib.Patch;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author : zuodp
@@ -10,10 +15,10 @@ import difflib.Patch;
  */
 public class DiffDemo {
 	public static void main(String[] args) {
-		Patch<String> patch = DiffUtils.diff(
-				Lists.newArrayList("GGATCGA".split("|")),
-				Lists.newArrayList("GAATTCAGTTA".split("|"))
-		);
-		System.out.println("patch = " + patch);
+		ArrayList<String> src = Lists.newArrayList("GGATCGA".split("|"));
+		ArrayList<String> dst = Lists.newArrayList("GAATTCAGTTA".split("|"));
+		Patch<String> patch = DiffUtils.diff(src, dst);
+		List<DiffRow> diffRows = new DiffRowGenerator.Builder().showInlineDiffs(true).build().generateDiffRows(src, dst, patch);
+		System.out.println(diffRows);
 	}
 }

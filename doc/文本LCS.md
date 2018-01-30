@@ -1,0 +1,100 @@
+文本比较算法Ⅱ——Needleman/Wunsch算法
+算法
+
+摘要： 　　
+　　在“文本比较算法Ⅰ——LD算法”中介绍了基于编辑距离的文本比较算法——LD算法。
+　　本文介绍基于最长公共子串的文本比较算法——Needleman/Wunsch算法。
+
+　　还是以实例说明：字符串A=kitten，字符串B=sitting
+　　那他们的最长公共子串为ittn（注：最长公共子串不需要连续出现，但一定是出现的顺序一致），最长公共子串长度为4。
+
+　　定义：
+
+　　LCS(A,B)表示字符串A和字符串B的最长公共子串的长度。很显然，LSC(A,B)=0表示两个字符串没有公共部分。
+
+　　Rev(A)表示反转字符串A
+
+　　Len(A)表示字符串A的长度
+
+　　A+B表示连接字符串A和字符串B
+
+　　性质：
+
+　　LCS(A,A)=Len(A)
+
+　　LCS(A,"")=0
+
+　　LCS(A,B)=LCS(B,A)
+
+　　0≤LCS(A,B)≤Min(Len(A),Len(B))
+
+　　LCS(A,B)=LCS(Rev(A),Rev(B))
+
+　　LCS(A+C,B+C)=LCS(A,B)+Len(C)
+
+　　LCS(A+B,A+C)=Len(A)+LCS(B,C)
+
+　　LCS(A,B)≥LCS(A,C)+LCS(B,C)
+
+　　LCS(A+C,B)≥LCS(A,B)+LCS(B,C)
+
+ 为了讲解计算LCS(A,B)，特给予以下几个定义
+
+　　A=a1a2……aN，表示A是由a1a2……aN这N个字符组成，Len(A)=N
+
+　　B=b1b2……bM，表示B是由b1b2……bM这M个字符组成，Len(B)=M
+
+　　定义LCS(i,j)=LCS(a1a2……ai,b1b2……bj)，其中0≤i≤N，0≤j≤M
+
+　　故：　　LCS(N,M)=LCS(A,B)
+
+　　　　　　LCS(0,0)=0
+
+　　　　　　LCS(0,j)=0
+
+　　　　　　LCS(i,0)=0
+
+　　对于1≤i≤N，1≤j≤M，有公式一
+
+　　若ai=bj，则LCS(i,j)=LCS(i-1,j-1)+1
+
+　　若ai≠bj，则LCS(i,j)=Max(LCS(i-1,j-1),LCS(i-1,j),LCS(i,j-1))
+
+　　计算LCS(A,B)的算法有很多，下面介绍的Needleman/Wunsch算法是其中的一种。和LD算法类似，Needleman/Wunsch算法用的都是动态规划的思想。在Needleman/Wunsch算法中还设定了一个权值，用以区分三种操作（插入、删除、更改）的优先级。在下面的算法中，认为三种操作的优先级都一样。故权值默认为1。
+
+　　举例说明：A=GGATCGA，B=GAATTCAGTTA，计算LCS(A,B)
+
+　　第一步：初始化LCS矩阵
+ 	 	G	A	A	T	T	C	A	G	T	T	A
+ 	0	0	0	0	0	0	0	0	0	0	0	0
+G	0	 	 	 	 	 	 	 	 	 	 	 
+G	0	 	 	 	 	 	 	 	 	 	 	 
+A	0	 	 	 	 	 	 	 	 	 	 	 
+T	0	 	 	 	 	 	 	 	 	 	 	 
+C	0	 	 	 	 	 	 	 	 	 	 	 
+G	0	 	 	 	 	 	 	 	 	 	 	 
+A	0	 	 	 	 	 	 	 	 	 	 	 
+　　第二步：利用公式一，计算矩阵的第一行
+ 	 	G	A	A	T	T	C	A	G	T	T	A
+ 	0	0	0	0	0	0	0	0	0	0	0	0
+G	0	1	1	1	1	1	1	1	1	1	1	1
+G	0	 	 	 	 	 	 	 	 	 	 	 
+A	0	 	 	 	 	 	 	 	 	 	 	 
+T	0	 	 	 	 	 	 	 	 	 	 	 
+C	0	 	 	 	 	 	 	 	 	 	 	 
+G	0	 	 	 	 	 	 	 	 	 	 	 
+A	0	 	 	 	 	 	 	 	 	 	 	 
+ 　　第三步：利用公式一，计算矩阵的其余各行
+ 	 	G	A	A	T	T	C	A	G	T	T	A
+ 	0	0	0	0	0	0	0	0	0	0	0	0
+G	0	1	1	1	1	1	1	1	1	1	1	1
+G	0	1	1	1	1	1	1	1	2	2	2	2
+A	0	1	2	2	2	2	2	2	2	2	2	2
+T	0	1	2	2	3	3	3	3	3	3	3	3
+C	0	1	2	2	3	3	4	4	4	4	4	4
+G	0	1	2	2	3	3	3	4	5	5	5	5
+A	0	1	2	3	3	3	3	4	5	5	5	6
+　　则，LCS(A,B)=LCS(7,11)=6
+　　可以看出，Needleman/Wunsch算法实际上和LD算法是非常接近的。故他们的时间复杂度和空间复杂度也一样。时间复杂度为O(MN)，
+空间复杂度为O(MN)。空间复杂度经过优化，可以优化到O(M)，但是一旦优化就丧失了计算匹配字串的机会了。由于代码和LD算法几乎一样。
+　　还是以上面为例A=GGATCGA，B=GAATTCAGTTA，LCS(A,B)=6
