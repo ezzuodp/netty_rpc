@@ -67,7 +67,7 @@ public class NettyClient {
 			logger.info("connect {}:{} ok.", inetHost, inetPort);
 
 			heatbeatExe = Executors.newScheduledThreadPool(1, new DefaultThreadFactory("netty-client-heartbeat", true));
-			heatbeatExe.scheduleAtFixedRate(new NettyHeatbeatTask(), 60, 60, TimeUnit.SECONDS);
+			heatbeatExe.scheduleAtFixedRate(new NettyHeartbeatTask(), 30, 30, TimeUnit.SECONDS);
 		} catch (Exception e) {
 			logger.error("connect {}:{} error：", inetHost, inetPort, e);
 		}
@@ -127,18 +127,24 @@ public class NettyClient {
 		}
 	}
 
-	class NettyHeatbeatTask implements Runnable {
-		private byte[] TIME = ("PING").getBytes();
+	class NettyHeartbeatTask implements Runnable {
+		private byte[] PING = ("PING").getBytes();
 
-		public NettyHeatbeatTask() {
+		public NettyHeartbeatTask() {
 		}
 
 		@Override
 		public void run() {
-			CustTMessage custTMessage = CustTMessage.newRequestMessage();
-			custTMessage.setType(CustTType.ONEWAY);
-			custTMessage.setBody(ByteBuffer.wrap(TIME));
-			writeReqImpl(custTMessage);
+			final CustTMessage request = CustTMessage.newRequestMessage();
+			request.setType(CustTType.ONEWAY);
+			request.setBody(ByteBuffer.wrap(PING));
+
+			channel.writeAndFlush(request).addListener((ChannelFutureListener) future -> {
+				if (future.isSuccess()) {
+					return;
+				}
+				logger.warn("send Heartbeat to channel <{}> failed.\nREQ:{}", future.channel(), request);
+			});
 		}
 	}
 
@@ -219,18 +225,6 @@ public class NettyClient {
 
 	private ResponseFuture writeReqImpl(CustTMessage request) {
 		if (!channel.isActive()) throw new TSendRequestException("channel is closed.");
-		if (request.getType() == CustTType.ONEWAY) {
-			channel.writeAndFlush(request).addListener(new ChannelFutureListener() {
-				@Override
-				public void operationComplete(ChannelFuture future) throws Exception {
-					if (future.isSuccess()) {
-						return;
-					}
-					logger.warn("send a request to channel <{}> failed.\nREQ:{}", future.channel(), request);
-				}
-			});
-			return null;
-		}
 
 		final ResponseFuture responseFuture = new ResponseFuture(request.getSeqId());
 		responseTable.put(responseFuture.getId(), responseFuture);
