@@ -25,6 +25,14 @@ public class RpcClient {
 		this.protocol = protocol;
 	}
 
+	public NettyClient getNettyClient() {
+		return nettyClient;
+	}
+
+	public RpcProtocol getProtocol() {
+		return protocol;
+	}
+
 	public <T> T createRef(Class<T> importInterface) {
 		// 生成一个client invoker.
 		Proxy proxy = Proxy.getProxy(importInterface);
