@@ -1,6 +1,8 @@
 package com.ezweb.engine.util;
 
 import java.lang.reflect.Array;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 
 /**
  * 大根堆的Java实现
@@ -8,15 +10,22 @@ import java.lang.reflect.Array;
  * @author : zuodp
  * @version : 1.10
  */
-public class MaxHeap<T extends Comparable<T>> {
+public abstract class MaxHeap<T extends Comparable<T>> {
 	private int n;
 	private int a;
 	private T[] array;
 
-	public MaxHeap(Class<T> tType, int size) {
-		array = (T[]) Array.newInstance(tType, size);
-		a = size;
-		n = 0;
+	public MaxHeap(int size) {
+		Type f = this.getClass().getGenericSuperclass();
+		Type pv = ((ParameterizedType) f).getRawType();                // MaxHeap.class
+		Type av = ((ParameterizedType) f).getActualTypeArguments()[0]; // T.class
+		if (av instanceof Class) {
+			// T.class
+			Class<T> xx = (Class<T>) av;
+			array = (T[]) Array.newInstance(xx, size);
+			a = size;
+			n = 0;
+		}
 	}
 
 	public void push(T nv) {

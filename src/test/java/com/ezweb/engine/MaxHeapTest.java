@@ -15,7 +15,7 @@ public class MaxHeapTest {
 		for (int i = 0; i < array.length; ++i)
 			array[i] = i + 1;
 
-		MaxHeap<Integer> maxHeap = new MaxHeap<>(Integer.class, 128);
+		MaxHeap<Integer> maxHeap = new MaxHeap<Integer>(128) {};
 		for (int i = 0; i < array.length; ++i)
 			maxHeap.push(array[i]);
 
