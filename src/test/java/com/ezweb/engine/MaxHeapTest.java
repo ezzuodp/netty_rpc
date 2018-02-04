@@ -15,7 +15,7 @@ public class MaxHeapTest {
 		for (int i = 0; i < array.length; ++i)
 			array[i] = i + 1;
 
-		MaxHeap<Integer> maxHeap = new MaxHeap<Integer>(128) {};
+		MaxHeap<Integer> maxHeap = new IntegerMaxHeap(100);
 		for (int i = 0; i < array.length; ++i)
 			maxHeap.push(array[i]);
 
@@ -23,6 +23,12 @@ public class MaxHeapTest {
 			int v = maxHeap.pop();
 			Assert.assertEquals(v, array[i]);
 			Assert.assertEquals(i, maxHeap.size());
+		}
+	}
+
+	private static class IntegerMaxHeap extends MaxHeap<Integer> {
+		IntegerMaxHeap(int size) {
+			super(size);
 		}
 	}
 }
