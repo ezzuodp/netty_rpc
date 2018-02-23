@@ -30,6 +30,7 @@ public class ArraySort {
 		}
 	}
 
+	// 2分查找
 	static void find(int[] array, int len, int v) {
 		int l = 0;
 		int r = len - 1;

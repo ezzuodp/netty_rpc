@@ -1,4 +1,4 @@
-package com.ezweb.demo.simple;
+package com.ezweb.rpc.simple;
 
 import java.util.concurrent.CompletableFuture;
 

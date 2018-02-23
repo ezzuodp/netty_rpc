@@ -1,0 +1,5 @@
+1. tcp
+2. kafka
+3. 数据库表设计
+   表名|主键设计|字段类型长度|冗余|索引|Create,Update,Version|
+4.

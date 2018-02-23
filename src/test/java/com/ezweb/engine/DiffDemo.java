@@ -1,4 +1,4 @@
-package com.ezweb.demo;
+package com.ezweb.engine;
 
 import com.google.common.collect.Lists;
 import difflib.DiffRow;

@@ -1,4 +1,4 @@
-package com.ezweb.demo;
+package com.ezweb.engine;
 
 import org.openjdk.jol.info.ClassData;
 import org.openjdk.jol.layouters.CurrentLayouter;

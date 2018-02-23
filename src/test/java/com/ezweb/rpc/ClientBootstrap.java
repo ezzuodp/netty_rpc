@@ -1,4 +1,4 @@
-package com.ezweb.demo;
+package com.ezweb.rpc;
 
 import com.ezweb.engine.client.NettyClient;
 import com.ezweb.engine.log.Log4j2System;
@@ -7,8 +7,8 @@ import com.ezweb.engine.rpc.client.AsyncRpcClient;
 import com.ezweb.engine.rpc.serialize.kryo.KryoDecoder;
 import com.ezweb.engine.rpc.serialize.kryo.KryoEncoder;
 import com.ezweb.engine.rpc.server.RpcProtocolImpl;
-import com.ezweb.demo.simple.HelloAsync;
-import com.ezweb.demo.simple.TimeResult;
+import com.ezweb.rpc.simple.HelloAsync;
+import com.ezweb.rpc.simple.TimeResult;
 import io.netty.util.concurrent.DefaultThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
