@@ -8,6 +8,7 @@ import org.apache.logging.log4j.core.config.ConfigurationSource;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.Map;
 import java.util.Properties;
 
 /**
@@ -21,8 +22,12 @@ public class Log4j2System {
 		this.name = name;
 	}
 
-	public void init(Properties other) {
-		if (other != null) System.setProperties(other);
+	public void init(Map<String, String> other) {
+		if (other != null) {
+			for (String kk : other.keySet()) {
+				System.setProperty(kk, other.get(kk));
+			}
+		}
 		System.setProperty("applicationName", this.name);
 
 		loadConfiguration(this.name + "-log4j2.xml");

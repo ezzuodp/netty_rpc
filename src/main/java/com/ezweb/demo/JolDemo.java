@@ -48,6 +48,19 @@ public class JolDemo {
 		Instance size: 16 bytes
 		Space losses: 0 bytes internal + 4 bytes external = 4 bytes total
 
+        Object o = new Item[21];
+        21个对象引用占用：21 * 4 = 84 个字节.
+		[Lcom.ezweb.demo.JolDemo$Item; object internals:
+		 OFFSET  SIZE                          TYPE DESCRIPTION                               VALUE
+		      0     4                               (object header)                           01 00 00 00 (00000001 00000000 00000000 00000000) (1)
+		      4     4                               (object header)                           00 00 00 00 (00000000 00000000 00000000 00000000) (0)
+		      8     4                               (object header)                           43 c1 00 f8 (01000011 11000001 00000000 11111000) (-134168253)
+		     12     4                               (object header)                           15 00 00 00 (00010101 00000000 00000000 00000000) (21) --> 数组长度
+		     16    84   com.ezweb.demo.JolDemo$Item JolDemo$Item;.<elements>                  N/A
+		    100     4                               (loss due to the next object alignment)
+		Instance size: 104 bytes
+		Space losses: 0 bytes internal + 4 bytes external = 4 bytes total
+
 		//--------------------------------------------------------------------------------------------
 		typedef class   markOopDesc*  markOop;
 		class oopDesc {
@@ -64,7 +77,7 @@ public class JolDemo {
 		 //--------------------------------------------------------------------------------------------
 
 		 */
-		Object o = new Item();
+		Object o = new Item[21];
 		{
 			ClassData classData = ClassData.parseInstance(o);
 			CurrentLayouter currentLayouter = new CurrentLayouter();
