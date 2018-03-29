@@ -18,9 +18,7 @@ import io.netty.util.concurrent.DefaultEventExecutorGroup;
 import io.netty.util.concurrent.DefaultThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 
-import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -76,13 +74,13 @@ public class NettyServer {
 
 	private ServerBootstrap configServer() {
 		if (RemotingUtil.isLinuxPlatform()) {
-			bossGroup = new EpollEventLoopGroup(1, new UUIDThreadFactory("NettyBossGroup"));
-			workerGroup = new EpollEventLoopGroup(3, new UUIDThreadFactory("NettyWorkerSelectorGroup"));
+			bossGroup = new EpollEventLoopGroup(1, new DefaultThreadFactory("NettyBossGroup"));
+			workerGroup = new EpollEventLoopGroup(3, new DefaultThreadFactory("NettyWorkerSelectorGroup"));
 		} else {
-			bossGroup = new NioEventLoopGroup(1, new UUIDThreadFactory("NettyBossGroup"));
-			workerGroup = new NioEventLoopGroup(3, new UUIDThreadFactory("NettyWorkerSelectorGroup"));
+			bossGroup = new NioEventLoopGroup(1, new DefaultThreadFactory("NettyBossGroup"));
+			workerGroup = new NioEventLoopGroup(3, new DefaultThreadFactory("NettyWorkerSelectorGroup"));
 		}
-		defaultEventExecutorGroup = new DefaultEventExecutorGroup(8, new UUIDThreadFactory("NettyExecGroup"));
+		defaultEventExecutorGroup = new DefaultEventExecutorGroup(8, new DefaultThreadFactory("NettyExecGroup"));
 
 		ServerBootstrap b = new ServerBootstrap();
 		b.group(bossGroup, workerGroup)
@@ -169,37 +167,6 @@ public class NettyServer {
 			logger.warn("NETTY SERVER PIPELINE: exceptionCaught {}, exception:", remoteAddress, cause);
 
 			RemotingUtil.closeChannel(ctx.channel());
-		}
-	}
-
-	private static class UUIDThreadFactory extends DefaultThreadFactory {
-
-		public UUIDThreadFactory(String poolName) {
-			super(poolName);
-		}
-
-		@Override
-		protected Thread newThread(Runnable r, String name) {
-			return super.newThread(new TXIDRunnableProxy(r), name);
-		}
-	}
-
-	private static class TXIDRunnableProxy implements Runnable {
-		Runnable _r;
-
-		public TXIDRunnableProxy(Runnable _r) {
-			this._r = _r;
-		}
-
-		@Override
-		public void run() {
-			MDC.put("TxId", UUID.randomUUID().toString().replace("-", ""));
-			try {
-				_r.run();
-			} finally {
-				_r = null;
-				MDC.remove("TxId");
-			}
 		}
 	}
 }
