@@ -12,16 +12,15 @@ public class StringView {
 	/**
 	 * 用于计算匹配的位置（从头到尾）
 	 */
-	public static int kmp(String str, String sub) {
+	public static int kmp(String str, String sub, int[] subNext, int index) {
 		if (str == null || sub == null || str.length() == 0 || sub.length() == 0) {
 			throw new IllegalArgumentException("str或者sub不能为空");
 		}
 
 		int j = 0;
-		int[] n = next(sub);
-		for (int i = 0; i < str.length(); i++) {
+		for (int i = index; i < str.length(); i++) {
 			while (j > 0 && str.charAt(i) != sub.charAt(j)) {
-				j = n[j - 1];
+				j = subNext[j - 1];
 			}
 
 			if (str.charAt(i) == sub.charAt(j)) {
@@ -29,8 +28,7 @@ public class StringView {
 			}
 
 			if (sub.length() == j) {
-				int index = i - j + 1;
-				return index;
+				return i - j + 1;
 			}
 		}
 
@@ -39,6 +37,21 @@ public class StringView {
 
 	/**
 	 * 用于生成部分匹配表
+	 * ABCDABD
+	 * 0000120
+	 * 　－　"A"的前缀和后缀都为空集，共有元素的长度为0；
+	 * <p>
+	 * 　　－　"AB"的前缀为[A]，后缀为[B]，共有元素的长度为0；
+	 * <p>
+	 * 　　－　"ABC"的前缀为[A, AB]，后缀为[BC, C]，共有元素的长度0；
+	 * <p>
+	 * 　　－　"ABCD"的前缀为[A, AB, ABC]，后缀为[BCD, CD, D]，共有元素的长度为0；
+	 * <p>
+	 * 　　－　"ABCDA"的前缀为[A, AB, ABC, ABCD]，后缀为[BCDA, CDA, DA, A]，共有元素为"A"，长度为1；
+	 * <p>
+	 * 　　－　"ABCDAB"的前缀为[A, AB, ABC, ABCD, ABCDA]，后缀为[BCDAB, CDAB, DAB, AB, B]，共有元素为"AB"，长度为2；
+	 * <p>
+	 * 　　－　"ABCDABD"的前缀为[A, AB, ABC, ABCD, ABCDA, ABCDAB]，后缀为[BCDABD, CDABD, DABD, ABD, BD, D]，共有元素的长度为0。
 	 */
 	private static int[] next(String sub) {
 		int[] n = new int[sub.length()];
@@ -58,10 +71,12 @@ public class StringView {
 	}
 
 	public static void main(String[] args) {
-		String v = "BBCABCDABABCDABCDABDE";
+		String v = "BBCABCDABABCDABCDABDEABCDABD";
 		String f = "ABCDABD";
 
-		int r = kmp(v, f);
+		int r = kmp(v, f, next(f), 0);
+		System.out.println("r = " + r);
+		r = kmp(v, f, next(f), r + f.length());
 		System.out.println("r = " + r);
 
 	}
