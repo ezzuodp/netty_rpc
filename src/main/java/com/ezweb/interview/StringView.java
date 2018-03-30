@@ -55,29 +55,29 @@ public class StringView {
 	 */
 	private static int[] next(String sub) {
 		int[] n = new int[sub.length()];
-		int x = 0;
-		for (int i = 1; i < sub.length(); i++) {
-			while (x > 0 && sub.charAt(x) != sub.charAt(x)) {
-				x = n[x - 1];
+		for (int i = 1, k = 0; i < sub.length(); i++) {
+
+			while (k > 0 && sub.charAt(k) != sub.charAt(i)) {
+				k = n[k - 1];
 			}
 
-			if (sub.charAt(i) == sub.charAt(x)) {
-				x++;
+			if (sub.charAt(k) == sub.charAt(i)) {
+				k++;
 			}
 
-			n[i] = x;
+			n[i] = k;
 		}
 		return n;
 	}
 
 	public static void main(String[] args) {
-		String v = "BBCABCDABABCDABCDABDEABCDABD";
+		String v = "BBC ABCDAB ABCDABCDABDEABCDABD";
 		String f = "ABCDABD";
 
 		int r = kmp(v, f, next(f), 0);
-		System.out.println("r = " + r);
+		System.out.println("r = " + r + "," + v.substring(r, r + f.length()));
 		r = kmp(v, f, next(f), r + f.length());
-		System.out.println("r = " + r);
+		System.out.println("r = " + r + "," + v.substring(r, r + f.length()));
 
 	}
 }
