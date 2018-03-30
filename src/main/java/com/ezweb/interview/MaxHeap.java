@@ -79,10 +79,9 @@ public abstract class MaxHeap<T extends Comparable<T>> {
 			maxHeap.push(array[i]);
 		}
 
-		for (int i = 0; i < 10; --i) {
+		for (int i = 0; i < 10; ++i) {
 			int v = maxHeap.pop();
+			System.out.println("v = " + v);
 		}
 	}
-
-
 }
