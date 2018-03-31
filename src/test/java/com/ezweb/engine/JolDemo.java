@@ -1,6 +1,6 @@
 package com.ezweb.engine;
 
-import com.ezweb.interview.shorturl.H64;
+import com.ezweb.interview.shorturl.encode.H64;
 import org.openjdk.jol.info.ClassData;
 import org.openjdk.jol.layouters.CurrentLayouter;
 import sun.misc.Contended;

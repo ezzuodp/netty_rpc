@@ -1,4 +1,4 @@
-package com.ezweb.interview.shorturl;
+package com.ezweb.interview.shorturl.encode;
 
 import java.util.Arrays;
 
