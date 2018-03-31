@@ -1,5 +1,6 @@
 package com.ezweb.interview;
 
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -8,12 +9,18 @@ import java.util.concurrent.atomic.AtomicReference;
  * @author : zuodp
  * @version : 1.10
  */
-public class RBTree<T extends Comparable<T>> {
+public class RBTree<K, T extends RBTree.RBTreeItem<K>> {
+	public interface RBTreeItem<K> extends Comparable<K> {
+		K key();
+
+		@Override
+		int compareTo(K otherKey);
+	}
 
 	private RBTreeNode<T> root;
 	private RBTreeNode<T> sentinel;
 
-	public void init() {
+	public RBTree() {
 		this.sentinel = new RBTreeNode<>();
 		rbt_black(this.sentinel);
 		this.root = this.sentinel;
@@ -99,8 +106,8 @@ public class RBTree<T extends Comparable<T>> {
 		return node != null && node != this.sentinel ? node.val : null;
 	}
 
-	public void delete(T v) {
-		RBTreeNode<T> node = rbt_find_node(this.root, this.sentinel, v);
+	public void delete(K k) {
+		RBTreeNode<T> node = rbt_find_node_by_key(this.root, this.sentinel, k);
 		if (node == null) return;
 
 		boolean red = false;
@@ -259,6 +266,12 @@ public class RBTree<T extends Comparable<T>> {
 		rbt_black(temp);
 	}
 
+	public Optional<T> find(K k) {
+		RBTreeNode<T> node = rbt_find_node_by_key(this.root, this.sentinel, k);
+		if (node == null) return Optional.empty();
+		return Optional.of(node.val);
+	}
+
 	private RBTreeNode<T> rbt_min_node(RBTreeNode<T> node, RBTreeNode<T> sentinel) {
 		while (node != null && node.left != sentinel) {
 			node = node.left;
@@ -266,11 +279,11 @@ public class RBTree<T extends Comparable<T>> {
 		return node;
 	}
 
-	private RBTreeNode<T> rbt_find_node(RBTreeNode<T> node, RBTreeNode<T> sentinel, T val) {
+	private RBTreeNode<T> rbt_find_node_by_key(RBTreeNode<T> node, RBTreeNode<T> sentinel, K key) {
 		if (node == sentinel) return null;
 		do {
 			T tv = node.val;
-			int r = tv.compareTo(val);
+			int r = tv.compareTo(key);
 			if (r == 0) {
 				return node;
 			}
@@ -356,7 +369,7 @@ public class RBTree<T extends Comparable<T>> {
 	}
 
 	private int node_cmp_proc(RBTreeNode<T> a, RBTreeNode<T> b) {
-		return a.val.compareTo(b.val);
+		return a.val.compareTo(b.val.key());
 	}
 
 	private void rbt_black(RBTreeNode<T> node) {
@@ -399,3 +412,4 @@ public class RBTree<T extends Comparable<T>> {
 		BLACK
 	}
 }
+
