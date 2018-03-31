@@ -30,13 +30,13 @@ public class AnswerImpl implements Answer {
 		public Result call() {
 			// 处理应答节点还需支持一些额外操作
 			new DefaultCommander().execute(problem);
+
 			// 加载问题
 			Result result = new WrapperLoader().load(this.problem);
+
 			// 返回终端结果
 			ResultFormatter fmt = fmtFactory.getFormat(source);
-			Result fmtResult = fmt.format(result);
-			// 补充结果.
-			return fmtFactory.getAppendFormatter().format(fmtResult);
+			return fmt.format(result);
 		}
 	}
 }
