@@ -19,7 +19,8 @@ package com.ezweb.engine.util;
 
 import com.google.common.base.Preconditions;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -60,7 +61,7 @@ public final class IdGenerator {
 	public static final int WORKER_ID_MAX_MARK = WORKER_ID_MAX_VALUE - 1;
 
 	static {
-		EPOCH = LocalDate.now().toEpochDay();;
+		EPOCH = LocalDateTime.of(2018, 1, 1, 0, 0, 0, 0).toInstant(ZoneOffset.UTC).toEpochMilli();
 	}
 
 	private long workerId;
@@ -70,7 +71,7 @@ public final class IdGenerator {
 	private long lastTime;
 
 	public IdGenerator(long workerId) {
-		this.workerId = workerId;
+		this.workerId = (workerId & WORKER_ID_MAX_MARK);
 	}
 
 	/**

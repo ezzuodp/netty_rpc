@@ -1,6 +1,7 @@
 package com.ezweb.interview.shorturl;
 
 import com.ezweb.interview.shorturl.build.ShortUrlBuilder;
+import com.ezweb.interview.shorturl.build.ShortUrlBuilderImpl;
 import com.ezweb.interview.shorturl.cache.NormalUrlCache;
 import com.ezweb.interview.shorturl.cache.ShortUrlCache;
 import com.ezweb.interview.shorturl.url.NormalUrl;
@@ -17,44 +18,64 @@ public class ShortUrlUtil {
 
 	private final String prefix;
 
-	private ShortUrlBuilder shortUrlBuilder = null;
+	private ShortUrlBuilder shortUrlBuilder = new ShortUrlBuilderImpl();
 
 	private NormalUrlCache normalUrlCache = new NormalUrlCache();
 	private ShortUrlCache shortUrlcache = new ShortUrlCache();
 
 	public ShortUrlUtil() {
-		prefix = SHORT_URL_START;
+		this(SHORT_URL_START);
+	}
+
+	public ShortUrlUtil(String prefix) {
+		this.prefix = prefix;
 	}
 
 	public ShortUrl normal2Short(NormalUrl url) {
-		// 1. 判断已经生成 shortUrl.
-		Optional<String> shortUrl = normalUrlCache.getShortUrl(url.getUrl());
-		if (shortUrl.isPresent()) {
-			return new ShortUrl(shortUrl.get());
+		// 1. 判断是否已经生成 shortCode.
+		Optional<String> shortCode = normalUrlCache.getShortCode(url);
+
+		if (shortCode.isPresent()) {
+			return new ShortUrl(prefix, shortCode.get());
 		}
 
-		// 2. 生成 短URL
-		shortUrl = shortUrlBuilder.buildShortUrl(url.getUrl());
+		// 1.1 得到已经生成 shortCode.
+		shortCode = shortUrlBuilder.loadShortCode(url.getUrl());
+		if (shortCode.isPresent()) {
+			ShortUrl shortUrl = new ShortUrl(prefix, shortCode.get());
 
-		// 3. 缓存<Key:短URL, Val:长url>
-		shortUrlcache.put(shortUrl.get(), url.getUrl());
+			// 重入缓存
+			shortUrlcache.putNormalUrl(shortUrl, url.getUrl());
+			normalUrlCache.putShortCode(url, shortUrl.getShortCode());
 
-		return new ShortUrl(prefix + shortUrl.get());
+			return shortUrl;
+		}
+
+		// 2. 新生成 短URL
+		shortCode = shortUrlBuilder.buildShortCode(url.getUrl());
+		ShortUrl shortUrl = new ShortUrl(prefix, shortCode.get());
+
+		// 3. 缓存
+		shortUrlcache.putNormalUrl(shortUrl, url.getUrl());
+		normalUrlCache.putShortCode(url, shortUrl.getShortCode());
+
+		return shortUrl;
 	}
 
 	public NormalUrl short2Normal(ShortUrl url) {
-		String shortUrl = url.getUrl().substring(prefix.length());
-		// 1. 找 缓存<Key:短URL, Val:长url>
-		Optional<String> normalUrl = shortUrlcache.getNormalUrl(shortUrl);
+		String shortCode = url.getShortCode();
 
-		// 2. 找 持久化 短URL 长url
-		if (!normalUrl.isPresent()) {
-			normalUrl = Optional.of(shortUrlBuilder.loadNormal(shortUrl));
-			shortUrlcache.put(shortUrl, normalUrl.get());
+		// 1. 找 缓存<Key:短URL, Val:长url>
+		Optional<String> normalUrl = shortUrlcache.getNormalUrl(url);
+		if (normalUrl.isPresent()) {
+			return new NormalUrl(normalUrl.get());
 		}
 
-		// 3. 返回 长url <异步缓存>
+		// 2. 找 持久化 短URL 长url
+		normalUrl = shortUrlBuilder.loadNormalUrl(shortCode);
 		if (normalUrl.isPresent()) {
+			// 重入缓存
+			shortUrlcache.putNormalUrl(url, normalUrl.get());
 			return new NormalUrl(normalUrl.get());
 		}
 

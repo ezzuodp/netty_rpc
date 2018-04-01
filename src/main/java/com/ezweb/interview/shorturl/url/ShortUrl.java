@@ -5,21 +5,20 @@ package com.ezweb.interview.shorturl.url;
  * @version : 1.10
  */
 public class ShortUrl implements IUrl {
-	private String url;
+	private String prefix;
+	private String shortCode;
 
-	public ShortUrl() {
-	}
-
-	public ShortUrl(String url) {
-		this.url = url;
+	public ShortUrl(String prefix, String shortCode) {
+		this.prefix = prefix;
+		this.shortCode = shortCode;
 	}
 
 	@Override
 	public String getUrl() {
-		return url;
+		return prefix + shortCode;
 	}
 
-	public void setUrl(String url) {
-		this.url = url;
+	public String getShortCode() {
+		return shortCode;
 	}
 }

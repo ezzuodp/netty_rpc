@@ -6,13 +6,10 @@ import java.util.Optional;
  * @author : zuodp
  * @version : 1.10
  */
-public class ShortUrlBuilder {
+public interface ShortUrlBuilder {
+	Optional<String> buildShortCode(String normalUrl);
 
-	public Optional<String> buildShortUrl(String normalUrl) {
-		return null;
-	}
+	Optional<String> loadNormalUrl(String shortCode);
 
-	public String loadNormal(String shortUrl) {
-		return null;
-	}
+	Optional<String> loadShortCode(String normalUrl);
 }
