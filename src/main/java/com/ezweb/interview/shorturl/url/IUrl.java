@@ -1,8 +1,8 @@
 package com.ezweb.interview.shorturl.url;
 
+import com.ezweb.interview.shorturl.encode.Hex;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
-import org.bouncycastle.util.encoders.Hex;
 
 /**
  * @author : zuodp
@@ -15,6 +15,6 @@ public interface IUrl {
 		// 用MD5将normalUrl变短.
 		HashFunction md5 = Hashing.md5();
 		byte[] v = md5.newHasher().putUnencodedChars(this.getUrl()).hash().asBytes();
-		return Hex.toHexString(v);
+		return Hex.fromByteArray(v);
 	}
 }
