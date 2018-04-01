@@ -9,27 +9,20 @@ import java.util.concurrent.atomic.AtomicReference;
  * @author : zuodp
  * @version : 1.10
  */
-public class RBTree<K, T extends RBTree.RBTreeItem<K>> {
-	public interface RBTreeItem<K> extends Comparable<K> {
-		K key();
+public class RBTree<K, T extends RBTreeItem<K>> {
 
-		@Override
-		int compareTo(K otherKey);
-	}
-
-	private RBTreeNode<T> root;
+	private AtomicReference<RBTreeNode<T>> root;
 	private RBTreeNode<T> sentinel;
 
 	public RBTree() {
 		this.sentinel = new RBTreeNode<>();
 		rbt_black(this.sentinel);
-		this.root = this.sentinel;
+		this.root = new AtomicReference<>(this.sentinel);
 	}
 
 	public void insert(T v) {
 		RBTreeNode<T> node = new RBTreeNode<>(v);
 
-		AtomicReference<RBTreeNode<T>> root;
 		RBTreeNode<T> temp, sentinel;
 		// 1.节点非红即黑。
 		// 2.根节点是黑色。
@@ -38,7 +31,6 @@ public class RBTree<K, T extends RBTree.RBTreeItem<K>> {
 		// 5.从任一节点到其叶子节点的所有路径上都包含相同数目的黑节点。
 
 		/* a binary tree insert */
-		root = new AtomicReference<>(this.root);
 		sentinel = this.sentinel;
 
 		if (root.get() == this.sentinel) {
@@ -46,7 +38,7 @@ public class RBTree<K, T extends RBTree.RBTreeItem<K>> {
 			node.left = sentinel;
 			node.right = sentinel;
 			rbt_black(node); // insert root, set black.
-			this.root = node;
+			this.root.set(node);
 			return;
 		}
 
@@ -96,26 +88,25 @@ public class RBTree<K, T extends RBTree.RBTreeItem<K>> {
 				}
 			}
 		}
-		// 将root写回，root 设为 black
-		this.root = root.get();
-		rbt_black(this.root);
+		// root 设为 black
+		rbt_black(root.get());
 	}
 
-	public T min() {
-		RBTreeNode<T> node = rbt_min_node(this.root, this.sentinel);
-		return node != null && node != this.sentinel ? node.val : null;
+	public Optional<T> min() {
+		RBTreeNode<T> node = rbt_min_node(this.root.get(), this.sentinel);
+		return node != null && node != this.sentinel ? Optional.of(node.val) : Optional.empty();
 	}
 
-	public void delete(K k) {
-		RBTreeNode<T> node = rbt_find_node_by_key(this.root, this.sentinel, k);
-		if (node == null) return;
+	public Optional<T> delete(K k) {
+		RBTreeNode<T> node = rbt_find_node_by_key(this.root.get(), this.sentinel, k);
+		if (node == null) return null;
 
 		boolean red = false;
-		AtomicReference<RBTreeNode<T>> root;
+		//AtomicReference<RBTreeNode<T>> root;
 		RBTreeNode<T> sentinel, subst, temp, w;
 
 		/* a binary tree delete */
-		root = new AtomicReference<>(this.root);
+		//root = new AtomicReference<>(this.root);
 		sentinel = this.sentinel;
 
 		if (node.left == sentinel) {
@@ -138,15 +129,14 @@ public class RBTree<K, T extends RBTree.RBTreeItem<K>> {
 
 		if (subst == root.get()) {
 			root.set(temp);
-			this.root = root.get();
-			rbt_black(this.root);
+			rbt_black(this.root.get());
 
 			/* DEBUG stuff */
 			node.left = null;
 			node.right = null;
 			node.parent = null;
 
-			return;
+			return Optional.of(node.val);
 		}
 
 		red = rbt_is_red(subst);
@@ -173,7 +163,7 @@ public class RBTree<K, T extends RBTree.RBTreeItem<K>> {
 
 			if (node == root.get()) {
 				root.set(subst);
-				this.root = root.get();
+				/*this.root = root.get();*/
 			} else {
 				if (node == node.parent.left) {
 					node.parent.left = subst;
@@ -197,7 +187,7 @@ public class RBTree<K, T extends RBTree.RBTreeItem<K>> {
 		node.parent = null;
 
 		if (red) {
-			return;
+			return Optional.of(node.val);
 		}
 
 		/* a delete fixup */
@@ -264,10 +254,12 @@ public class RBTree<K, T extends RBTree.RBTreeItem<K>> {
 		}
 
 		rbt_black(temp);
+
+		return Optional.of(node.val);
 	}
 
 	public Optional<T> find(K k) {
-		RBTreeNode<T> node = rbt_find_node_by_key(this.root, this.sentinel, k);
+		RBTreeNode<T> node = rbt_find_node_by_key(this.root.get(), this.sentinel, k);
 		if (node == null) return Optional.empty();
 		return Optional.of(node.val);
 	}
@@ -307,7 +299,7 @@ public class RBTree<K, T extends RBTree.RBTreeItem<K>> {
 
 		if (node == root.get()) {
 			root.set(temp);
-			this.root = root.get();
+
 		} else if (node == node.parent.right) {
 			node.parent.right = temp;
 
@@ -333,7 +325,6 @@ public class RBTree<K, T extends RBTree.RBTreeItem<K>> {
 
 		if (node == root.get()) {
 			root.set(temp);
-			this.root = root.get();
 
 		} else if (node == node.parent.left) {
 			node.parent.left = temp;
