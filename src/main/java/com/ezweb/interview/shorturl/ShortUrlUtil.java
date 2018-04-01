@@ -4,6 +4,8 @@ import com.ezweb.interview.shorturl.build.ShortUrlBuilder;
 import com.ezweb.interview.shorturl.build.ShortUrlBuilderImpl;
 import com.ezweb.interview.shorturl.cache.NormalUrlCache;
 import com.ezweb.interview.shorturl.cache.ShortUrlCache;
+import com.ezweb.interview.shorturl.load.UrlLoader;
+import com.ezweb.interview.shorturl.load.UrlLoaderImpl;
 import com.ezweb.interview.shorturl.url.NormalUrl;
 import com.ezweb.interview.shorturl.url.ShortUrl;
 
@@ -19,6 +21,7 @@ public class ShortUrlUtil {
 	private final String prefix;
 
 	private ShortUrlBuilder shortUrlBuilder = new ShortUrlBuilderImpl();
+	private UrlLoader loader = new UrlLoaderImpl();
 
 	private NormalUrlCache normalUrlCache = new NormalUrlCache();
 	private ShortUrlCache shortUrlcache = new ShortUrlCache();
@@ -40,7 +43,7 @@ public class ShortUrlUtil {
 		}
 
 		// 1.1 得到已经生成 shortCode.
-		shortCode = shortUrlBuilder.loadShortCode(url.getUrl());
+		shortCode = loader.loadShortCode(url.getUrl());
 		if (shortCode.isPresent()) {
 			ShortUrl shortUrl = new ShortUrl(prefix, shortCode.get());
 
@@ -72,7 +75,7 @@ public class ShortUrlUtil {
 		}
 
 		// 2. 找 持久化 短URL 长url
-		normalUrl = shortUrlBuilder.loadNormalUrl(shortCode);
+		normalUrl = loader.loadNormalUrl(shortCode);
 		if (normalUrl.isPresent()) {
 			// 重入缓存
 			shortUrlcache.putNormalUrl(url, normalUrl.get());

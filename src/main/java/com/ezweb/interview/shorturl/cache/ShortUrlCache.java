@@ -19,6 +19,6 @@ public class ShortUrlCache {
 	}
 
 	public Optional<String> getNormalUrl(ShortUrl shortUrl) {
-		return Optional.of(map.get(shortUrl.getShortCode()));
+		return Optional.ofNullable(map.get(shortUrl.getShortCode()));
 	}
 }

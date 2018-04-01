@@ -18,7 +18,7 @@ public class NormalUrlCache {
 
 	public Optional<String> getShortCode(NormalUrl normalUrl) {
 		String shortUrl = map.get(normalUrl.key());
-		return Optional.of(shortUrl);
+		return Optional.ofNullable(shortUrl);
 	}
 
 	public void putShortCode(NormalUrl normalUrl, String shortCode) {

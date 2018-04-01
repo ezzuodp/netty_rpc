@@ -9,7 +9,4 @@ import java.util.Optional;
 public interface ShortUrlBuilder {
 	Optional<String> buildShortCode(String normalUrl);
 
-	Optional<String> loadNormalUrl(String shortCode);
-
-	Optional<String> loadShortCode(String normalUrl);
 }
