@@ -1,5 +1,7 @@
 package com.ezweb.interview.shorturl.build;
 
+import com.ezweb.interview.shorturl.url.NormalUrl;
+
 import java.util.Optional;
 
 /**
@@ -7,6 +9,5 @@ import java.util.Optional;
  * @version : 1.10
  */
 public interface ShortUrlBuilder {
-	Optional<String> buildShortCode(String normalUrl);
-
+	Optional<String> buildShortCode(NormalUrl normalUrl);
 }
