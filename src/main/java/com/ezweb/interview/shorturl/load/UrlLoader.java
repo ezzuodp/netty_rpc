@@ -23,5 +23,5 @@ public interface UrlLoader {
 	/**
 	 * 缓存对照关系.
 	 */
-	void cacheShortUrl(ShortUrl shortUrl, NormalUrl url);
+	void saveUrlMapping(ShortUrl shortUrl, NormalUrl url);
 }

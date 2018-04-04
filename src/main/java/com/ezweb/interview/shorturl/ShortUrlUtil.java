@@ -42,7 +42,7 @@ public class ShortUrlUtil {
 		if (shortCode.isPresent()) {
 
 			ShortUrl shortUrl = new ShortUrl(prefix, shortCode.get());
-			urlLoader.cacheShortUrl(shortUrl, url);
+			urlLoader.saveUrlMapping(shortUrl, url);
 
 			return shortUrl;
 		}

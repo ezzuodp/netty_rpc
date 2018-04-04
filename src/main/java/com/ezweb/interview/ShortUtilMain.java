@@ -20,6 +20,6 @@ public class ShortUtilMain {
 			System.out.println("shortUrl =>>> " + shortUrl.getUrl());
 			System.out.println("result = " + result.getUrl());
 		}
-		
+		System.out.println("shortUrlUtil = " + shortUrlUtil);
 	}
 }
