@@ -1,5 +1,7 @@
 package com.ezweb.interview.shorturl.build;
 
+import com.ezweb.interview.shorturl.url.NormalUrl;
+
 import java.util.Optional;
 
 /**
