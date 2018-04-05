@@ -77,11 +77,11 @@ public class UrlLoaderImpl implements UrlLoader {
 	 */
 	@Override
 	public void saveUrlMapping(ShortUrl shortUrl, NormalUrl url) {
+		// <<分区保存到数据库中>>
 		shortDb.insert(new DbShortUrlItem(shortUrl.getShortCode(), url.getUrl()));
 		normalDb.insert(new DbNormalUrlItem(url.key(), shortUrl.getShortCode()));
-
-		shortUrlCache.refresh(shortUrl.getShortCode());
-		normalUrlCache.refresh(url.key());
+		// 优先缓存{短->长}
+		shortUrlCache.put(shortUrl.getShortCode(), url.getUrl());
 	}
 
 	private static class DbShortUrlItem implements RBTreeItem<String> {
