@@ -9,6 +9,7 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 
 import java.util.Optional;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -16,7 +17,6 @@ import java.util.concurrent.TimeUnit;
  * @version : 1.10
  */
 public class UrlLoaderImpl implements UrlLoader {
-
 	private RBTree<String, DbShortUrlItem> shortDb = new RBTree<>();
 	private RBTree<String, DbNormalUrlItem> normalDb = new RBTree<>();
 
@@ -24,9 +24,11 @@ public class UrlLoaderImpl implements UrlLoader {
 			.expireAfterAccess(30, TimeUnit.MINUTES)
 			.build(new CacheLoader<String, String>() {
 				@Override
-				public String load(String normalKey) throws Exception {
+				public String load(String normalKey) {
 					Optional<DbNormalUrlItem> item = normalDb.find(normalKey);
-					return item.get().shortCode;
+					if (item.isPresent())
+						return item.get().shortCode;
+					return null;
 				}
 			});
 
@@ -34,9 +36,11 @@ public class UrlLoaderImpl implements UrlLoader {
 			.expireAfterAccess(30, TimeUnit.MINUTES)
 			.build(new CacheLoader<String, String>() {
 				@Override
-				public String load(String shortCode) throws Exception {
+				public String load(String shortCode) {
 					Optional<DbShortUrlItem> item = shortDb.find(shortCode);
-					return item.get().normalUrl;
+					if (item.isPresent())
+						return item.get().normalUrl;
+					return null;
 				}
 			});
 
@@ -45,7 +49,13 @@ public class UrlLoaderImpl implements UrlLoader {
 	 */
 	@Override
 	public Optional<String> loadShortCode(NormalUrl normalUrl) {
-		return Optional.ofNullable(normalUrlCache.getIfPresent(normalUrl.key()));
+		String value = null;
+		try {
+			value = normalUrlCache.get(normalUrl.key());
+		} catch (CacheLoader.InvalidCacheLoadException | ExecutionException e) {
+			// ignore e;
+		}
+		return Optional.ofNullable(value);
 	}
 
 	/**
@@ -53,7 +63,13 @@ public class UrlLoaderImpl implements UrlLoader {
 	 */
 	@Override
 	public Optional<String> loadNormalUrl(ShortUrl shortUrl) {
-		return Optional.ofNullable(shortUrlCache.getIfPresent(shortUrl.getShortCode()));
+		String value = null;
+		try {
+			value = shortUrlCache.get(shortUrl.getShortCode());
+		} catch (CacheLoader.InvalidCacheLoadException | ExecutionException e) {
+			// ignore e;
+		}
+		return Optional.ofNullable(value);
 	}
 
 	/**
@@ -63,6 +79,9 @@ public class UrlLoaderImpl implements UrlLoader {
 	public void saveUrlMapping(ShortUrl shortUrl, NormalUrl url) {
 		shortDb.insert(new DbShortUrlItem(shortUrl.getShortCode(), url.getUrl()));
 		normalDb.insert(new DbNormalUrlItem(url.key(), shortUrl.getShortCode()));
+
+		shortUrlCache.refresh(shortUrl.getShortCode());
+		normalUrlCache.refresh(url.key());
 	}
 
 	private static class DbShortUrlItem implements RBTreeItem<String> {
