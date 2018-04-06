@@ -58,7 +58,7 @@ public class ClientBootstrap {
 			HelloAsync helloProxy = rpcClient.createRef(HelloAsync.class);
 
 			int j = 0;
-			for (int i = 0; i < 1000; ++i) {
+			for (int i = 0; i < 128; ++i) {
 
 				CompletableFuture<TimeResult> timeResultFuture = helloProxy.say("interface say", System.currentTimeMillis());
 				++j;
@@ -81,11 +81,11 @@ public class ClientBootstrap {
 					}
 				}
 				timeResultFuture.whenCompleteAsync(new ConsumerImpl(i), async_pool);
-				if (j % 32 == 0) TimeUnit.SECONDS.sleep(12L); // 并发32个.
+				if (j % 32 == 0) TimeUnit.SECONDS.sleep(1L); // 并发32个.
 			}
 		}
 
-		TimeUnit.SECONDS.sleep(240L);
+		TimeUnit.SECONDS.sleep(2L);
 
 		socket_client.close();
 	}

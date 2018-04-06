@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration status="WARN" >
     <Properties>
-        <Property name="log-path">applogs</Property>
+        <Property name="log-path">logs</Property>
     </Properties>
     <Appenders>
         <Console name="Console-Appender" target="SYSTEM_OUT" follow="true">
@@ -31,10 +31,10 @@
         Logger使用<asyncRoot> or <asyncLogger>
     -->
     <Loggers>
-        <AsyncLogger name="com.ezweb" level="info" additivity="false">
+        <AsyncLogger name="com.ezweb" level="debug" additivity="true">
             <AppenderRef ref="App-File-Appender"/>
         </AsyncLogger>
-        <Root level="info">
+        <Root level="debug">
             <AppenderRef ref="Console-Appender"/>
         </Root>
     </Loggers>

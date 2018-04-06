@@ -75,7 +75,10 @@ public class NettyClient {
 
 	public void close() {
 		logger.info("close channel:{}", this.channel);
+		this.channel.close();
+
 		heatbeatExe.shutdown();
+
 		Future<?> f = this.eventLoopGroupWorker.shutdownGracefully();
 		while (!f.isDone()) {
 			try {
@@ -101,7 +104,7 @@ public class NettyClient {
 			}
 		}*/
 
-		this.channel.close();
+
 
 		logger.info("close channel:{} ok.", this.channel);
 	}
