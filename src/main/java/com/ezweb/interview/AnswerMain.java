@@ -1,6 +1,6 @@
 package com.ezweb.interview;
 
-import com.ezweb.interview.answer.AnswerImpl;
+import com.ezweb.interview.answer.impl.AnswerImpl;
 import com.ezweb.interview.answer.Result;
 import com.ezweb.interview.answer.problem.ProblemImpl;
 import com.ezweb.interview.answer.terminal.H5Term;

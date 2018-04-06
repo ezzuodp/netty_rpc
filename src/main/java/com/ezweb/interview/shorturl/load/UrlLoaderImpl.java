@@ -52,7 +52,7 @@ public class UrlLoaderImpl implements UrlLoader {
 		String value = null;
 		try {
 			value = normalUrlCache.get(normalUrl.key());
-		} catch (CacheLoader.InvalidCacheLoadException | ExecutionException e) {
+		} catch (CacheLoader.InvalidCacheLoadException | CacheLoader.UnsupportedLoadingOperationException | ExecutionException e) {
 			// ignore e;
 		}
 		return Optional.ofNullable(value);
@@ -66,7 +66,7 @@ public class UrlLoaderImpl implements UrlLoader {
 		String value = null;
 		try {
 			value = shortUrlCache.get(shortUrl.getShortCode());
-		} catch (CacheLoader.InvalidCacheLoadException | ExecutionException e) {
+		} catch (CacheLoader.InvalidCacheLoadException | CacheLoader.UnsupportedLoadingOperationException | ExecutionException e) {
 			// ignore e;
 		}
 		return Optional.ofNullable(value);
@@ -82,6 +82,7 @@ public class UrlLoaderImpl implements UrlLoader {
 		normalDb.insert(new DbNormalUrlItem(url.key(), shortUrl.getShortCode()));
 		// 优先缓存{短->长}
 		shortUrlCache.put(shortUrl.getShortCode(), url.getUrl());
+		normalUrlCache.put(url.key(), shortUrl.getShortCode());
 	}
 
 	private static class DbShortUrlItem implements RBTreeItem<String> {

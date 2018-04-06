@@ -1,5 +1,6 @@
 package com.ezweb.interview.answer.fmt;
 
+import com.ezweb.interview.answer.FormatterFactory;
 import com.ezweb.interview.answer.Result;
 import com.ezweb.interview.answer.ResultFormatter;
 import com.ezweb.interview.answer.Terminal;
@@ -8,10 +9,11 @@ import com.ezweb.interview.answer.Terminal;
  * @author : zuodp
  * @version : 1.10
  */
-public class FormatterFactory {
+public class FormatterFactoryImpl implements FormatterFactory {
 	private ResultFormatter h5Formatter = new H5Formater();
 	private ResultFormatter webFormatter = new WebFormatter();
 
+	@Override
 	public ResultFormatter getFormat(Terminal terminal) {
 		if (terminal.type() == Terminal.H5) {
 			return new FlagFormatter(h5Formatter);
