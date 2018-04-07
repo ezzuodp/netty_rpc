@@ -1,37 +1,37 @@
-apply plugin: 'java'
-apply plugin: 'idea'
-apply plugin: 'maven'
-
-configurations {
-	provided
-}
-
-sourceSets {
-	main.compileClasspath += configurations.provided
-	test.compileClasspath += configurations.provided
-	test.runtimeClasspath += configurations.provided
-}
-
-idea {
-	module {
-		downloadSources = true
-		scopes.PROVIDED.plus += [configurations.provided]
-		excludeDirs += [
-				file('work'),     // containing transient artifacts used by embedded Tomcat
-				file('logs'),     // containing app logs written by embedded Tomcat
-		]
-	}
-}
-
-compileJava.options.encoding = 'UTF-8'
-compileTestJava.options.encoding = 'UTF-8'
-
-tasks.withType(JavaCompile) {
-	options.encoding = "UTF-8"
-}
-
-repositories {
-	mavenLocal()
-	maven { url "http://maven.aliyun.com/nexus/content/groups/public" }
-	maven { url "http://repo.maven.apache.org/maven2" }
-}
+//apply plugin: 'java'
+//apply plugin: 'idea'
+//apply plugin: 'maven'
+//
+//configurations {
+//	provided
+//}
+//
+//sourceSets {
+//	main.compileClasspath += configurations.provided
+//	test.compileClasspath += configurations.provided
+//	test.runtimeClasspath += configurations.provided
+//}
+//
+//idea {
+//	module {
+//		downloadSources = true
+//		scopes.PROVIDED.plus += [configurations.provided]
+//		excludeDirs += [
+//				file('work'),     // containing transient artifacts used by embedded Tomcat
+//				file('logs'),     // containing app logs written by embedded Tomcat
+//		]
+//	}
+//}
+//
+//compileJava.options.encoding = 'UTF-8'
+//compileTestJava.options.encoding = 'UTF-8'
+//
+//tasks.withType(JavaCompile) {
+//	options.encoding = "UTF-8"
+//}
+//
+//repositories {
+//	mavenLocal()
+//	maven { url "http://maven.aliyun.com/nexus/content/groups/public" }
+//	maven { url "http://repo.maven.apache.org/maven2" }
+//}

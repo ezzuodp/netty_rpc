@@ -2,11 +2,7 @@ package com.ezweb.engine.util;
 
 import java.util.*;
 
-import io.netty.buffer.PoolArenaMetric;
-import io.netty.buffer.PoolChunkListMetric;
-import io.netty.buffer.PoolChunkMetric;
-import io.netty.buffer.PoolSubpageMetric;
-import io.netty.buffer.PooledByteBufAllocator;
+import io.netty.buffer.*;
 
 /**
  * PooledAlloc status
@@ -18,16 +14,17 @@ import io.netty.buffer.PooledByteBufAllocator;
 public class PooledAllocatorStats {
 	public Map<String, Object> getMetrics() {
 		final PooledByteBufAllocator allocator = PooledByteBufAllocator.DEFAULT;
+		PooledByteBufAllocatorMetric metric = allocator.metric();
 		final Map<String, Object> metrics = new HashMap<>();
 		{
 			int idx = 0;
-			for (PoolArenaMetric poolArenaMetric : allocator.directArenas()) {
+			for (PoolArenaMetric poolArenaMetric : metric.directArenas()) {
 				metrics.put("1_DirectArena[" + idx++ + "]", metricsOfPoolArena(poolArenaMetric));
 			}
 		}
 		{
 			int idx = 0;
-			for (PoolArenaMetric poolArenaMetric : allocator.heapArenas()) {
+			for (PoolArenaMetric poolArenaMetric : metric.heapArenas()) {
 				metrics.put("2_HeapArena[" + idx++ + "]", metricsOfPoolArena(poolArenaMetric));
 			}
 		}

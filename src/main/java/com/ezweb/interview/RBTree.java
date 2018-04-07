@@ -265,7 +265,7 @@ public class RBTree<K, T extends RBTreeItem<K>> {
 	}
 
 	private RBTreeNode<T> rbt_min_node(RBTreeNode<T> node, RBTreeNode<T> sentinel) {
-		while (node != null && node.left != sentinel) {
+		while (node != null && node != sentinel && node.left != sentinel) {
 			node = node.left;
 		}
 		return node;

@@ -1,6 +1,6 @@
 package com.ezweb.engine;
 
-import com.ezweb.rpc.simple.Hello;
+import com.ezweb.demo.simple.Hello;
 import com.ezweb.engine.exception.TBizException;
 import com.ezweb.engine.rpc.asm.ReflectUtils;
 import com.ezweb.engine.rpc.serialize.kryo.KryoDecoder;

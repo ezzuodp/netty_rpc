@@ -1,4 +1,4 @@
-package com.ezweb.rpc;
+package com.ezweb.demo;
 
 import com.ezweb.engine.CustProtoType;
 import com.ezweb.engine.log.Log4j2System;
@@ -9,8 +9,8 @@ import com.ezweb.engine.rpc.server.RpcHandlerImpl;
 import com.ezweb.engine.rpc.server.RpcProtocolImpl;
 import com.ezweb.engine.rpc.server.RpcServerHandlerCreator;
 import com.ezweb.engine.server.NettyServer;
-import com.ezweb.rpc.simple.Hello;
-import com.ezweb.rpc.simple.HelloImpl;
+import com.ezweb.demo.simple.Hello;
+import com.ezweb.demo.simple.HelloImpl;
 
 /**
  * @author : zuodp

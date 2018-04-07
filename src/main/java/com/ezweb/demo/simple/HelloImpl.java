@@ -1,4 +1,4 @@
-package com.ezweb.rpc.simple;
+package com.ezweb.demo.simple;
 
 /**
  * @author : zuodp
