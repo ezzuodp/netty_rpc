@@ -1,9 +1,11 @@
 package com.ezweb.demo;
 
+import com.ezweb.demo.simple.Hello;
 import com.ezweb.engine.client.NettyClient;
 import com.ezweb.engine.log.Log4j2System;
 import com.ezweb.engine.rpc.RpcProtocol;
 import com.ezweb.engine.rpc.client.AsyncRpcClient;
+import com.ezweb.engine.rpc.client.RpcClient;
 import com.ezweb.engine.rpc.serialize.kryo.KryoDecoder;
 import com.ezweb.engine.rpc.serialize.kryo.KryoEncoder;
 import com.ezweb.engine.rpc.server.RpcProtocolImpl;
@@ -36,21 +38,27 @@ public class ClientBootstrap {
 		NettyClient socket_client = new NettyClient();
 		socket_client.open("localhost", 9000);
 
-	    /*{
+		RpcProtocol protocol = new RpcProtocolImpl(new KryoDecoder(), new KryoEncoder());
+
+	    {
 			RpcClient rpcClient = new RpcClient();
-			rpcClient.setProtocol(new RpcProtocolImpl());
-			rpcClient.setNettyClient(client);
+
+			rpcClient.setProtocol(protocol);
+			rpcClient.setNettyClient(socket_client);
+
 			Hello helloProxy = rpcClient.createRef(Hello.class);
 
 			for (int i = 0; i < 1000; ++i) {
-				TimeResult timeResult = helloProxy.say("interface say", System.currentTimeMillis());
-				logger.info("timeResult.num = {}, {}", i, timeResult.getTime());
+				try {
+					TimeResult timeResult = helloProxy.say("interface say", System.currentTimeMillis());
+					logger.info("timeResult.num = {}, {}", i, timeResult.getTime());
+				} catch (Exception e) {
+					logger.info("同步调用：返回异常:", e);
+				}
 			}
-		}*/
+		}
 		{
-			RpcProtocol protocol = new RpcProtocolImpl(new KryoDecoder(), new KryoEncoder());
-
-			AsyncRpcClient rpcClient = new AsyncRpcClient();
+			AsyncRpcClient rpcClient = new AsyncRpcClient(8);
 
 			rpcClient.setProtocol(protocol);
 			rpcClient.setNettyClient(socket_client);

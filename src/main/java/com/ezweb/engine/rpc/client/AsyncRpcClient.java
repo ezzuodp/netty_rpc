@@ -8,6 +8,7 @@ import com.ezweb.engine.rpc.RpcResponse;
 import com.ezweb.engine.rpc.asm.Proxy;
 import com.ezweb.engine.rpc.simple.AsyncInvoker;
 import com.ezweb.engine.rpc.simple.DefaultRpcResponse;
+import io.netty.util.concurrent.DefaultThreadFactory;
 
 import java.nio.ByteBuffer;
 import java.util.concurrent.CompletableFuture;
@@ -19,8 +20,12 @@ import java.util.function.Supplier;
  * @author : zuodp
  * @version : 1.10
  */
-public class AsyncRpcClient extends RpcClient{
-	private ExecutorService async_pool = Executors.newWorkStealingPool(8);
+public class AsyncRpcClient extends RpcClient {
+	private ExecutorService async_pool = null;
+
+	public AsyncRpcClient(int workerSize) {
+		this.async_pool = Executors.newFixedThreadPool(workerSize, new DefaultThreadFactory("async_worker", true));
+	}
 
 	@Override
 	public <T> T createRef(Class<T> importInterface) {
@@ -30,7 +35,7 @@ public class AsyncRpcClient extends RpcClient{
 		AsyncInvoker<T> invoker = new AsyncInvokerClientImpl<>(importInterface);
 
 		//noinspection unchecked
-		return (T) proxy.newInstance(new AsyncInvocationHandlerImpl<>(async_pool, importInterface, invoker));
+		return (T) proxy.newInstance(new AsyncInvocationHandlerImpl<>(importInterface, invoker));
 	}
 
 	private class AsyncInvokerClientImpl<T> implements AsyncInvoker<T> {

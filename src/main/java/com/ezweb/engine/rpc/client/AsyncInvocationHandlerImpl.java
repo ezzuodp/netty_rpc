@@ -9,20 +9,17 @@ import com.ezweb.engine.rpc.simple.DefaultRpcRequest;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
 
 /**
  * @author : zuodp
  * @version : 1.10
  */
-public class AsyncInvocationHandlerImpl<T> implements InvocationHandler {
+class AsyncInvocationHandlerImpl<T> implements InvocationHandler {
 	private static final String ASYNC = "Async";
 	private final Class<T> clz;
 	private final AsyncInvoker<T> rpcHandler;
-	private final ExecutorService async_pool;
 
-	AsyncInvocationHandlerImpl(ExecutorService async_pool, Class<T> clz, AsyncInvoker<T> rpcHandler) {
-		this.async_pool = async_pool;
+	AsyncInvocationHandlerImpl(Class<T> clz, AsyncInvoker<T> rpcHandler) {
 		this.clz = clz;
 		this.rpcHandler = rpcHandler;
 	}
@@ -46,11 +43,11 @@ public class AsyncInvocationHandlerImpl<T> implements InvocationHandler {
 		request.setArguments(args);
 
 		CompletableFuture<RpcResponse> response = this.rpcHandler.invoke(request);
-		return response.thenApplyAsync(rpcResponse -> {
+		return response.thenApply(rpcResponse -> {
 			if (rpcResponse.getException() != null)
 				throw new TBizException(rpcResponse.getException().getMessage()); // 将biz异常转化一下.
 			return rpcResponse.getValue();
-		}, async_pool);
+		});
 	}
 
 	private boolean isLocalMethod(Class<T> clz, Method method) {
