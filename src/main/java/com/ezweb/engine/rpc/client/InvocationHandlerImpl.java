@@ -23,7 +23,7 @@ public class InvocationHandlerImpl<T> implements InvocationHandler {
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        if (isLocalMethod(clz, method)) {
+        if (HandlerUtils.isLocalMethod(clz, method)) {
             throw new IllegalAccessException("can not invoke local method:" + method.getName());
         }
 
@@ -37,17 +37,5 @@ public class InvocationHandlerImpl<T> implements InvocationHandler {
         // 如果有异常
         if (response.getException() != null) throw response.getException();
         return response.getValue();
-    }
-
-    private boolean isLocalMethod(Class<T> clz, Method method) {
-        if (method.getDeclaringClass().equals(Object.class)) {
-            try {
-                clz.getDeclaredMethod(method.getName(), method.getParameterTypes());
-                return false;
-            } catch (Exception e) {
-                return true;
-            }
-        }
-        return false;
     }
 }

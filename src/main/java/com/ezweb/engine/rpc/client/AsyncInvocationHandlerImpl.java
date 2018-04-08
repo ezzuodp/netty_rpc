@@ -26,7 +26,7 @@ class AsyncInvocationHandlerImpl<T> implements InvocationHandler {
 
 	@Override
 	public CompletableFuture<Object> invoke(Object proxy, Method method, Object[] args) throws Throwable {
-		if (isLocalMethod(clz, method)) {
+		if (HandlerUtils.isLocalMethod(clz, method)) {
 			throw new IllegalAccessException("can not invoke local method:" + method.getName());
 		}
 
@@ -48,17 +48,5 @@ class AsyncInvocationHandlerImpl<T> implements InvocationHandler {
 				throw new TBizException(rpcResponse.getException().getMessage()); // 将biz异常转化一下.
 			return rpcResponse.getValue();
 		});
-	}
-
-	private boolean isLocalMethod(Class<T> clz, Method method) {
-		if (method.getDeclaringClass().equals(Object.class)) {
-			try {
-				clz.getDeclaredMethod(method.getName(), method.getParameterTypes());
-				return false;
-			} catch (Exception e) {
-				return true;
-			}
-		}
-		return false;
 	}
 }
