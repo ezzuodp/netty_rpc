@@ -1,7 +1,6 @@
 package com.ezweb.interview.shorturl.load;
 
 import com.ezweb.interview.RBTree;
-import com.ezweb.interview.RBTreeItem;
 import com.ezweb.interview.shorturl.url.NormalUrl;
 import com.ezweb.interview.shorturl.url.ShortUrl;
 import com.google.common.cache.CacheBuilder;
@@ -85,7 +84,7 @@ public class UrlLoaderImpl implements UrlLoader {
 		normalUrlCache.put(url.key(), shortUrl.getShortCode());
 	}
 
-	private static class DbShortUrlItem implements RBTreeItem<String> {
+	private static class DbShortUrlItem implements RBTree.Item<String> {
 		private String shortCode;
 		private String normalUrl;
 
@@ -111,7 +110,7 @@ public class UrlLoaderImpl implements UrlLoader {
 		}
 	}
 
-	private static class DbNormalUrlItem implements RBTreeItem<String> {
+	private static class DbNormalUrlItem implements RBTree.Item<String> {
 		private String normalUrlKey;
 		private String shortCode;
 

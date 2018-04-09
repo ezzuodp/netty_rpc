@@ -9,7 +9,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * @author : zuodp
  * @version : 1.10
  */
-public class RBTree<K, T extends RBTreeItem<K>> {
+public class RBTree<K, T extends RBTree.Item<K>> {
 
 	private AtomicReference<RBTreeNode<T>> root;
 	private RBTreeNode<T> sentinel;
@@ -401,6 +401,25 @@ public class RBTree<K, T extends RBTreeItem<K>> {
 	enum Color {
 		RED,
 		BLACK
+	}
+
+	/**
+	 * RBTreeItem 对象
+	 *
+	 * @author : zuodp
+	 * @version : 1.10
+	 */
+	public interface Item<K> extends Comparable<K> {
+		/**
+		 * 对象KEY
+		 */
+		K key();
+
+		/**
+		 * 比较对象KEY
+		 */
+		@Override
+		int compareTo(K otherKey);
 	}
 }
 

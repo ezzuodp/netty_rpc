@@ -36,7 +36,7 @@ public class ClientBootstrap {
 		// 同步写入并取回这个条结果.
 
 		NettyClient socket_client = new NettyClient();
-		socket_client.open("localhost", 9000);
+		socket_client.connect("localhost", 9000);
 
 		RpcProtocol protocol = new RpcProtocolImpl(new KryoDecoder(), new KryoEncoder());
 

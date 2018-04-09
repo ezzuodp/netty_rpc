@@ -43,7 +43,7 @@ public class NettyClient {
 		//this.defaultEventExecutorGroup = new DefaultEventExecutorGroup(16, new DefaultThreadFactory("NettyClientWorkerThread"));
 	}
 
-	public void open(String inetHost, int inetPort) {
+	public void connect(String inetHost, int inetPort) {
 		Bootstrap handler = this.bootstrap.group(this.eventLoopGroupWorker)
 				.channel(NioSocketChannel.class)
 				.option(ChannelOption.TCP_NODELAY, true)
@@ -53,7 +53,7 @@ public class NettyClient {
 					public void initChannel(SocketChannel ch) throws Exception {
 						ch.pipeline().addLast(
 								//defaultEventExecutorGroup,
-								new LoggingHandler("com.ezweb.CLIENT", LogLevel.DEBUG),
+								new LoggingHandler("com.ezweb.demo.client", LogLevel.DEBUG),
 								new NettyDecoder(),
 								new NettyEncoder(),
 								new NettyClientHandler()
