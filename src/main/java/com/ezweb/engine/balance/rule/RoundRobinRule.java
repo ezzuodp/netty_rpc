@@ -6,23 +6,33 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * <一句话说明功能>
- * <功能详细描述>
+ * 轮叫调度
  *
  * @author zuodengpeng
  * @version 1.0.0
  * @date 2018/4/13
  */
 public class RoundRobinRule<T extends Server> extends AbsLoadBalanceRule<T> {
-	private AtomicInteger index = new AtomicInteger();
+	private AtomicInteger last = new AtomicInteger(0);
 
 	public RoundRobinRule() {
 	}
 
 	@Override
-	protected <K> T chooseSelect(List<T> list, K k) {
-		int i = this.index.getAndIncrement();
-		i = i % list.size();
-		return list.get(i);
+	protected T chooseImpl(List<T> list) {
+		int n = list.size();
+		int j = this.last.getAndIncrement();
+		T sel = null;
+		do {
+			j = j % n;
+			sel = list.get(j);
+			if (sel.weight() > 0) {
+				return sel;
+			}
+			--n;
+			++j;
+		} while (n > 0);
+
+		return sel;
 	}
 }

@@ -1,35 +1,34 @@
 package com.ezweb.engine.balance.rule;
 
-import com.ezweb.engine.balance.WeightServer;
+import com.ezweb.engine.balance.Server;
 
 import java.util.List;
 
 /**
- * 按照 nginx 算法实现的权重软轮询算法
+ * 按照 nginx 加权轮叫调度算法
  *
  * @author zuodengpeng
  * @version 1.0.0
  * @date 2018/4/13
  */
-public class WeightRoundRobinRule<T extends WeightServer> extends AbsLoadBalanceRule<T> {
+public class NginxRoundRobinRule<T extends Server> extends AbsLoadBalanceRule<T> {
 
 	@Override
-	protected <K> T chooseSelect(List<T> list, K k) {
+	protected T chooseImpl(List<T> list) {
+		int n = list.size();
 		int total = 0;
 		T best = null;
 
-		for (int i = 0; i < list.size(); ++i) {
+		for (int i = 0; i < n; ++i) {
 			T w = list.get(i);
-			if (w == null) {
-				continue;
-			}
 
 			w.currentWeight(w.currentWeight() + w.effectiveWeight());
 			total += w.effectiveWeight();
 
-			// 这句是 nginx 动态调低了有效权重后，再动态把有效权重调起来
+			// 由于有调用失败的情况,可以动态调低了有效权重
 			if (w.effectiveWeight() < w.weight()) {
-				w.effectiveWeight(w.effectiveWeight() + 1);
+				// 负载时再动态把有效权重慢慢调起来
+				w.incEffectiveWeight(1);
 			}
 
 			if (best == null || w.currentWeight() > best.currentWeight()) {

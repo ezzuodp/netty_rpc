@@ -6,8 +6,7 @@ import java.util.List;
 import java.util.Random;
 
 /**
- * <一句话说明功能>
- * <功能详细描述>
+ * 随机调度
  *
  * @author zuodengpeng
  * @version 1.0.0
@@ -21,9 +20,18 @@ public class RandomRule<T extends Server> extends AbsLoadBalanceRule<T> {
 	}
 
 	@Override
-	protected <K> T chooseSelect(List<T> list, K k) {
-		int i = Math.abs(random.nextInt());
-		i = i % list.size();
-		return list.get(i);
+	protected T chooseImpl(List<T> list) {
+		int n = list.size();
+		int randomWeight = Math.abs(random.nextInt());
+		for (int i = 0; i < n; ++i) {
+			T iv = list.get(i);
+			if (iv.weight() > 0) {
+				randomWeight -= iv.weight();
+				if (randomWeight <= 0) {
+					return iv;
+				}
+			}
+		}
+		return null;
 	}
 }

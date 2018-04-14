@@ -15,12 +15,18 @@ import java.util.List;
  */
 public abstract class AbsLoadBalanceRule<T extends Server> implements LoadBalanceRule<T> {
 	@Override
-	public <K> T choose(List<T> list, K k) {
+	public T choose(List<T> list) {
 		if (list.size() == 0) return null;
-		if (list.size() == 1) return list.get(0);
+		if (list.size() == 1) {
+			T sel = list.get(0);
+			if (sel.weight() > 0) {
+				return sel;
+			}
+			return null;
+		}
 
-		return chooseSelect(list, k);
+		return chooseImpl(list);
 	}
 
-	protected abstract <K> T chooseSelect(List<T> list, K k);
+	protected abstract T chooseImpl(List<T> list);
 }
