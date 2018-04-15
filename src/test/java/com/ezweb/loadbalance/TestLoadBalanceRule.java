@@ -1,9 +1,9 @@
 package com.ezweb.loadbalance;
 
 import com.ezweb.engine.balance.Server;
-import com.ezweb.engine.balance.rule.LvsRoundRobinRule;
-import com.ezweb.engine.balance.rule.NginxRoundRobinRule;
-import com.ezweb.engine.balance.rule.RoundRobinRule;
+import com.ezweb.engine.balance.rule.LvsRoundRobinBalancer;
+import com.ezweb.engine.balance.rule.NginxRoundRobinBalancer;
+import com.ezweb.engine.balance.rule.RoundRobinBalancer;
 import com.google.common.collect.Lists;
 import org.apache.logging.log4j.util.Strings;
 import org.junit.After;
@@ -60,7 +60,7 @@ public class TestLoadBalanceRule {
 
 	@Test
 	public void testNginxRoundRobinRule() {
-		NginxRoundRobinRule<TestServer> x = new NginxRoundRobinRule<>();
+		NginxRoundRobinBalancer<TestServer> x = new NginxRoundRobinBalancer<>();
 		for (TestServer server : serverList) {
 			x.addServer(server);
 		}
@@ -82,7 +82,7 @@ public class TestLoadBalanceRule {
 				new TestServer("c", 1)
 		);
 
-		NginxRoundRobinRule<TestServer> x = new NginxRoundRobinRule<>();
+		NginxRoundRobinBalancer<TestServer> x = new NginxRoundRobinBalancer<>();
 		for (TestServer server : serverList) {
 			x.addServer(server);
 		}
@@ -100,7 +100,7 @@ public class TestLoadBalanceRule {
 
 	@Test
 	public void testRoundRobinRule() {
-		RoundRobinRule<TestServer> rule = new RoundRobinRule<>();
+		RoundRobinBalancer<TestServer> rule = new RoundRobinBalancer<>();
 		for (TestServer server : serverList) {
 			rule.addServer(server);
 		}
@@ -117,7 +117,7 @@ public class TestLoadBalanceRule {
 
 	@Test
 	public void testLvsRoundRobinRule() {
-		LvsRoundRobinRule<TestServer> rule = new LvsRoundRobinRule<>();
+		LvsRoundRobinBalancer<TestServer> rule = new LvsRoundRobinBalancer<>();
 		for (TestServer server : serverList) {
 			rule.addServer(server);
 		}

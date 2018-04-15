@@ -12,13 +12,13 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @version 1.0.0
  * @date 2018/4/13
  */
-public class LvsRoundRobinRule<T extends Server> extends AbsLoadBalanceRule<T> {
+public class LvsRoundRobinBalancer<T extends Server> extends AbsLoadBalancer<T> {
 	private AtomicInteger i = new AtomicInteger(-1);
 	private int gcd = 0;
 	private int cw = 0;
 	private int maxw = 0;
 
-	public LvsRoundRobinRule() {
+	public LvsRoundRobinBalancer() {
 	}
 
 	@Override

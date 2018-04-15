@@ -12,10 +12,10 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @version 1.0.0
  * @date 2018/4/13
  */
-public class RoundRobinRule<T extends Server> extends AbsLoadBalanceRule<T> {
+public class RoundRobinBalancer<T extends Server> extends AbsLoadBalancer<T> {
 	private AtomicInteger last = new AtomicInteger(0);
 
-	public RoundRobinRule() {
+	public RoundRobinBalancer() {
 	}
 
 	@Override

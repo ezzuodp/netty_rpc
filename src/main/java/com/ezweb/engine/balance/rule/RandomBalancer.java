@@ -12,10 +12,10 @@ import java.util.Random;
  * @version 1.0.0
  * @date 2018/4/13
  */
-public class RandomRule<T extends Server> extends AbsLoadBalanceRule<T> {
+public class RandomBalancer<T extends Server> extends AbsLoadBalancer<T> {
 	private java.util.Random random = null;
 
-	public RandomRule() {
+	public RandomBalancer() {
 		this.random = new Random(System.currentTimeMillis());
 	}
 

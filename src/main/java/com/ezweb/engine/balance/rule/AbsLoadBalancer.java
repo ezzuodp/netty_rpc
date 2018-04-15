@@ -11,10 +11,10 @@ import java.util.List;
  * @version 1.0.0
  * @date 2018/4/13
  */
-public abstract class AbsLoadBalanceRule<T extends Server> implements LoadBalanceRule<T> {
+public abstract class AbsLoadBalancer<T extends Server> implements LoadBalanceRule<T> {
 	private List<T> serverList = null;
 
-	public AbsLoadBalanceRule() {
+	public AbsLoadBalancer() {
 		this.serverList = new ArrayList<>();
 	}
 

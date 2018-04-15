@@ -11,7 +11,7 @@ import java.util.List;
  * @version 1.0.0
  * @date 2018/4/13
  */
-public class NginxRoundRobinRule<T extends Server> extends AbsLoadBalanceRule<T> {
+public class NginxRoundRobinBalancer<T extends Server> extends AbsLoadBalancer<T> {
 
 	@Override
 	protected T chooseImpl(List<T> list) {
