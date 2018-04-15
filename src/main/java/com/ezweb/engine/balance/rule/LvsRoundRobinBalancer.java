@@ -22,7 +22,8 @@ public class LvsRoundRobinBalancer<T extends Server> extends AbsLoadBalancer<T> 
 	}
 
 	@Override
-	protected void afterAddServer(List<T> serverList, T server) {
+	public void addServer(T server) {
+		super.addServer(server);
 		// TODO:动态加入的时,局部变量的原值更新.
 		if (server.weight() > 0) {
 			if (gcd == 0) {
@@ -41,7 +42,7 @@ public class LvsRoundRobinBalancer<T extends Server> extends AbsLoadBalancer<T> 
 
 	@Override
 	protected T chooseImpl(List<T> list) {
-		int n = list.size();
+
 		/*
 		假设有一组服务器S = {S0, S1, …, Sn-1}，W(Si)表示服务器Si的权值，一个
 		指示变量i表示上一次选择的服务器，指示变量cw表示当前调度的权值，max(S)
@@ -62,7 +63,7 @@ public class LvsRoundRobinBalancer<T extends Server> extends AbsLoadBalancer<T> 
 		    return Si;
 		}
 		*/
-
+		int n = list.size();
 		do {
 			int i = this.i.incrementAndGet() % n;
 			if (i == 0) {

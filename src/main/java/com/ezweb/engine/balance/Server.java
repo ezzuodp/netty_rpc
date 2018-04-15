@@ -8,8 +8,8 @@ package com.ezweb.engine.balance;
  * @date 2018/4/13
  */
 public abstract class Server {
-	private int weight = 0;
-	private int currentWeight = 0;
+	private volatile int weight = 0;
+	private volatile int currentWeight = 0;
 
 	public Server(int weight) {
 		this.weight = weight;

@@ -21,6 +21,7 @@ public class NginxRoundRobinBalancer<T extends Server> extends AbsLoadBalancer<T
 
 		for (int i = 0; i < n; ++i) {
 			T w = list.get(i);
+			if (w.weight() <= 0) continue;
 
 			w.currentWeight(w.currentWeight() + w.weight());
 			total += w.weight();

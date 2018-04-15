@@ -19,17 +19,7 @@ public abstract class AbsLoadBalancer<T extends Server> implements LoadBalanceRu
 	}
 
 	public void addServer(T server) {
-		this.beforeAddServer(serverList, server);
 		this.serverList.add(server);
-		this.afterAddServer(serverList, server);
-	}
-
-	protected void beforeAddServer(List<T> serverList, T server) {
-
-	}
-
-	protected void afterAddServer(List<T> serverList, T server) {
-
 	}
 
 	@Override
