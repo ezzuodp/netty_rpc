@@ -5,6 +5,7 @@ import com.ezweb.engine.balance.Server;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * @author zuodengpeng
@@ -12,18 +13,27 @@ import java.util.List;
  * @date 2018/4/13
  */
 public abstract class AbsLoadBalancer<T extends Server> implements LoadBalanceRule<T> {
-	private List<T> serverList = null;
+	private final ReentrantLock lock = new ReentrantLock();
+	private volatile List<T> serverList = null;
 
 	public AbsLoadBalancer() {
 		this.serverList = new ArrayList<>();
 	}
 
 	public void addServer(T server) {
-		this.serverList.add(server);
+		lock.lock();
+		try {
+			List<T> newList = new ArrayList<>(this.serverList);
+			newList.add(server);
+			this.serverList = newList;
+		} finally {
+			lock.unlock();
+		}
 	}
 
 	@Override
 	public T choose() {
+		List<T> serverList = getServerList();
 		if (serverList.size() == 0) return null;
 		if (serverList.size() == 1) {
 			T sel = serverList.get(0);
@@ -34,6 +44,10 @@ public abstract class AbsLoadBalancer<T extends Server> implements LoadBalanceRu
 		}
 
 		return chooseImpl(serverList);
+	}
+
+	protected List<T> getServerList() {
+		return this.serverList;
 	}
 
 	protected abstract T chooseImpl(List<T> list);

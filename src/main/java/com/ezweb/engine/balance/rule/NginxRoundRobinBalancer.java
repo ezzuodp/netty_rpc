@@ -19,20 +19,24 @@ public class NginxRoundRobinBalancer<T extends Server> extends AbsLoadBalancer<T
 		int total = 0;
 		T best = null;
 
-		for (int i = 0; i < n; ++i) {
-			T w = list.get(i);
-			if (w.weight() <= 0) continue;
+		synchronized (this) {
+			// 多线程同时修改一个 server.currentWeight 并发冲突.
+			for (int i = 0; i < n; ++i) {
+				T w = list.get(i);
+				if (w.weight() <= 0) continue;
 
-			w.currentWeight(w.currentWeight() + w.weight());
-			total += w.weight();
 
-			if (best == null || w.currentWeight() > best.currentWeight()) {
-				best = w;
+				w.currentWeight(w.currentWeight() + w.weight());
+				total += w.weight();
+
+				if (best == null || w.currentWeight() > best.currentWeight()) {
+					best = w;
+				}
 			}
-		}
 
-		if (best != null) {
-			best.currentWeight(best.currentWeight() - total);
+			if (best != null) {
+				best.currentWeight(best.currentWeight() - total);
+			}
 		}
 
 		return best;

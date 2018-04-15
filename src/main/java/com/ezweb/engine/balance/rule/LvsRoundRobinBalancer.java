@@ -3,7 +3,6 @@ package com.ezweb.engine.balance.rule;
 import com.ezweb.engine.balance.Server;
 
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * 按照 lvs 加权轮叫调度算法 实现的
@@ -13,9 +12,9 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @date 2018/4/13
  */
 public class LvsRoundRobinBalancer<T extends Server> extends AbsLoadBalancer<T> {
-	private AtomicInteger i = new AtomicInteger(-1);
+	private volatile int i = -1;
+	private volatile int cw = 0;
 	private int gcd = 0;
-	private int cw = 0;
 	private int maxw = 0;
 
 	public LvsRoundRobinBalancer() {
@@ -24,17 +23,19 @@ public class LvsRoundRobinBalancer<T extends Server> extends AbsLoadBalancer<T> 
 	@Override
 	public void addServer(T server) {
 		super.addServer(server);
-		// TODO:动态加入的时,局部变量的原值更新.
+
 		if (server.weight() > 0) {
-			if (gcd == 0) {
-				this.i = new AtomicInteger(-1);
-				this.gcd = server.weight();
-				this.maxw = server.weight();
-				this.cw = 0;
-			} else {
-				this.gcd = gcd(this.gcd, server.weight());
-				if (this.maxw < server.weight()) {
+			synchronized (this) {
+				if (gcd == 0) {
+					this.i = -1;
+					this.gcd = server.weight();
 					this.maxw = server.weight();
+					this.cw = 0;
+				} else {
+					this.gcd = gcd(this.gcd, server.weight());
+					if (this.maxw < server.weight()) {
+						this.maxw = server.weight();
+					}
 				}
 			}
 		}
@@ -64,22 +65,25 @@ public class LvsRoundRobinBalancer<T extends Server> extends AbsLoadBalancer<T> 
 		}
 		*/
 		int n = list.size();
-		do {
-			int i = this.i.incrementAndGet() % n;
-			if (i == 0) {
-				cw -= this.gcd;
-				if (cw <= 0) {
-					cw = this.maxw;
-					if (cw == 0) {
-						return null;
+		synchronized (this) {
+			// 暂时 sync 多线程同时并发 cw , i 并发冲突.
+			do {
+				this.i = (this.i + 1) % n;
+				if (i == 0) {
+					cw -= this.gcd;
+					if (cw <= 0) {
+						cw = this.maxw;
+						if (cw == 0) {
+							return null;
+						}
 					}
 				}
-			}
-			T tmp = list.get(i);
-			if (tmp.weight() >= cw) {
-				return tmp;
-			}
-		} while (true);
+				T tmp = list.get(i);
+				if (tmp.weight() >= cw) {
+					return tmp;
+				}
+			} while (true);
+		}
 	}
 
 	private int gcd(int x, int y) {
