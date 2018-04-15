@@ -3,8 +3,10 @@ package com.ezweb.engine.balance.rule;
 import com.ezweb.engine.balance.Server;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
+ * TODO: 还没有实现完成
  * 按照 lvs 加权轮叫调度算法
  *
  * @author zuodengpeng
@@ -12,9 +14,13 @@ import java.util.List;
  * @date 2018/4/13
  */
 public class LvsRoundRobinRule<T extends Server> extends AbsLoadBalanceRule<T> {
-	private int i;
-	private int gcd;
-	private int maxW;
+	private AtomicInteger i = new AtomicInteger(-1);
+	private int gcd = 0;
+	private int maxW = 0;
+
+	public LvsRoundRobinRule() {
+
+	}
 
 	@Override
 	protected T chooseImpl(List<T> list) {
@@ -39,11 +45,14 @@ public class LvsRoundRobinRule<T extends Server> extends AbsLoadBalanceRule<T> {
 		    return Si;
 		}
 		*/
+
+		do {
+			break;
+		} while (true);
 		return null;
 	}
 
 	private void initGcdMaxW(List<T> list) {
-		this.i = 0;
 		this.maxW = 0;
 		for (int i = 0; i < list.size(); ++i) {
 			T iv = list.get(i);

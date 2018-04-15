@@ -5,7 +5,7 @@ import com.ezweb.engine.balance.Server;
 import java.util.List;
 
 /**
- * 按照 nginx 加权轮叫调度算法
+ * 按照 nginx 加权轮叫调度算法(删除了effectiveWeight)
  *
  * @author zuodengpeng
  * @version 1.0.0
@@ -22,14 +22,8 @@ public class NginxRoundRobinRule<T extends Server> extends AbsLoadBalanceRule<T>
 		for (int i = 0; i < n; ++i) {
 			T w = list.get(i);
 
-			w.currentWeight(w.currentWeight() + w.effectiveWeight());
-			total += w.effectiveWeight();
-
-			// 由于有调用失败的情况,可以动态调低了有效权重
-			if (w.effectiveWeight() < w.weight()) {
-				// 负载时再动态把有效权重慢慢调起来
-				w.incEffectiveWeight(1);
-			}
+			w.currentWeight(w.currentWeight() + w.weight());
+			total += w.weight();
 
 			if (best == null || w.currentWeight() > best.currentWeight()) {
 				best = w;
