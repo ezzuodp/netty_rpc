@@ -6,8 +6,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * TODO: 还没有实现完成
- * 按照 lvs 加权轮叫调度算法
+ * 按照 lvs 加权轮叫调度算法 实现的
  *
  * @author zuodengpeng
  * @version 1.0.0
@@ -16,15 +15,33 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class LvsRoundRobinRule<T extends Server> extends AbsLoadBalanceRule<T> {
 	private AtomicInteger i = new AtomicInteger(-1);
 	private int gcd = 0;
-	private int maxW = 0;
+	private int cw = 0;
+	private int maxw = 0;
 
 	public LvsRoundRobinRule() {
+	}
 
+	@Override
+	protected void afterAddServer(List<T> serverList, T server) {
+		// TODO:动态加入的时,局部变量的原值更新.
+		if (server.weight() > 0) {
+			if (gcd == 0) {
+				this.i = new AtomicInteger(-1);
+				this.gcd = server.weight();
+				this.maxw = server.weight();
+				this.cw = 0;
+			} else {
+				this.gcd = gcd(this.gcd, server.weight());
+				if (this.maxw < server.weight()) {
+					this.maxw = server.weight();
+				}
+			}
+		}
 	}
 
 	@Override
 	protected T chooseImpl(List<T> list) {
-		initGcdMaxW(list);
+		int n = list.size();
 		/*
 		假设有一组服务器S = {S0, S1, …, Sn-1}，W(Si)表示服务器Si的权值，一个
 		指示变量i表示上一次选择的服务器，指示变量cw表示当前调度的权值，max(S)
@@ -47,27 +64,21 @@ public class LvsRoundRobinRule<T extends Server> extends AbsLoadBalanceRule<T> {
 		*/
 
 		do {
-			break;
-		} while (true);
-		return null;
-	}
-
-	private void initGcdMaxW(List<T> list) {
-		this.maxW = 0;
-		for (int i = 0; i < list.size(); ++i) {
-			T iv = list.get(i);
-			if (iv.weight() <= 0) continue;
-
-			if (this.gcd == 0) {
-				this.gcd = iv.weight();
-			} else {
-				this.gcd = gcd(gcd, iv.weight());
+			int i = this.i.incrementAndGet() % n;
+			if (i == 0) {
+				cw -= this.gcd;
+				if (cw <= 0) {
+					cw = this.maxw;
+					if (cw == 0) {
+						return null;
+					}
+				}
 			}
-
-			if (maxW < iv.weight())
-				maxW = iv.weight();
-		}
-
+			T tmp = list.get(i);
+			if (tmp.weight() >= cw) {
+				return tmp;
+			}
+		} while (true);
 	}
 
 	private int gcd(int x, int y) {

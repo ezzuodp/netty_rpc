@@ -1,7 +1,5 @@
 package com.ezweb.engine.balance;
 
-import java.util.List;
-
 /**
  *
  * @author zuodengpeng
@@ -9,5 +7,5 @@ import java.util.List;
  * @date 2018/4/13
  */
 public interface LoadBalanceRule<T extends Server> {
-	T choose(List<T> list);
+	T choose();
 }
