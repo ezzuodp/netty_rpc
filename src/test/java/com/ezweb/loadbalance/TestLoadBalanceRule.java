@@ -82,20 +82,34 @@ public class TestLoadBalanceRule {
 				new TestServer("c", 1)
 		);
 
-		NginxRoundRobinBalancer<TestServer> x = new NginxRoundRobinBalancer<>();
+		NginxRoundRobinBalancer<TestServer> ngx = new NginxRoundRobinBalancer<>();
 		for (TestServer server : serverList) {
-			x.addServer(server);
+			ngx.addServer(server);
+		}
+
+		LvsRoundRobinBalancer<TestServer> lvs = new LvsRoundRobinBalancer<>();
+		for (TestServer server : serverList) {
+			lvs.addServer(server);
 		}
 
 		// 期望:>>>> (a, a, b, a, c, a, a)
-		List<String> selIds = new ArrayList<>();
+		List<String> ngx_sel_ids = new ArrayList<>();
+		String ngx_sel_id;
 		for (int i = 0; i < 7; ++i) {
-			TestServer sel = x.choose();
-			selIds.add(sel.getId());
+			TestServer sel = ngx.choose();
+			ngx_sel_ids.add(sel.getId());
 		}
+		ngx_sel_id = Strings.join(ngx_sel_ids, ',');
+		Assert.assertEquals(ngx_sel_id, "a,a,b,a,c,a,a");
 
-		String selIdResult = Strings.join(selIds, ',');
-		Assert.assertEquals(selIdResult, "a,a,b,a,c,a,a");
+		List<String> lvs_sel_ids = new ArrayList<>();
+		String lvs_sel_id;
+		for (int i = 0; i < 7; ++i) {
+			TestServer sel = lvs.choose();
+			lvs_sel_ids.add(sel.getId());
+		}
+		lvs_sel_id = Strings.join(lvs_sel_ids, ',');
+		Assert.assertEquals(lvs_sel_id, "a,a,a,a,a,b,c");
 	}
 
 	@Test
