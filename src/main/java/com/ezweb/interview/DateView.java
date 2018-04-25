@@ -27,8 +27,13 @@ public class DateView {
 		return (year % 400) == 0 || ((year % 4) == 0 && (year % 100 > 0));
 	}
 
-	private static int[] DAYS1 = new int[]{31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
-	private static int[] DAYS2 = new int[]{31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+	private static int monthDays(int year, int month) {
+		if (month > 7) {
+			return month % 2 == 1 ? 30 : 31;
+		} else {
+			return month % 2 == 1 ? 31 : ((month == 2) ? (isLeap(year) ? 29 : 28) : 30);
+		}
+	}
 
 	public static String add(String strDate, String strDays) {
 		int year = str2Int(strDate.substring(0, 4));
@@ -36,10 +41,9 @@ public class DateView {
 		int day = str2Int(strDate.substring(6));
 		int days = str2Int(strDays);
 
-		int[] cur_days = isLeap(year) ? DAYS2 : DAYS1;
-		if ((day + days) > cur_days[month - 1]) {
+		if ((day + days) > monthDays(year, month)) {
 			// 翻到下个月1号
-			int c = cur_days[month - 1] - day + 1;
+			int c = monthDays(year, month) - day + 1;
 			days -= c;
 			++month;
 			day = 1;
@@ -50,9 +54,9 @@ public class DateView {
 
 			// 开始减
 			while (days > 0) {
-				cur_days = isLeap(year) ? DAYS2 : DAYS1;
-				if (days > cur_days[month - 1]) {
-					days -= cur_days[month - 1];
+				int mdays = monthDays(year, month);
+				if (days > mdays) {
+					days -= mdays;
 					day = 1;
 					++month;
 					if (month > 12) {
@@ -61,7 +65,8 @@ public class DateView {
 					}
 				} else {
 					day += days;
-					if (day > cur_days[month - 1]) {
+					days = 0;
+					if (day > mdays) {
 						day = 1;
 						++month;
 						if (month > 12) {
@@ -69,7 +74,6 @@ public class DateView {
 							month = 1;
 						}
 					}
-					break;
 				}
 			}
 		} else {
