@@ -83,10 +83,10 @@ public class DateView {
 	}
 
 	public static void main(String[] args) {
-		for (int i = 0; i < 200 * 365; ++i) {
+		for (int i = 0; i < 20 * 365; ++i) {
 			String f = add("19790917", String.valueOf(i));
-			String v = LocalDate.of(1979, 9, 17).minusDays(-i).toString();
-			System.out.println("f = " + f + "-->  v = " + v);
+			String v = LocalDate.of(1979, 9, 17).plusDays(i).toString();
+			System.out.printf("%04d : f = %s -->  v = %s \n", i, f, v);
 		}
 	}
 }
