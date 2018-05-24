@@ -6,9 +6,7 @@ import com.ezweb.engine.balance.rule.NginxRoundRobinBalancer;
 import com.ezweb.engine.balance.rule.RoundRobinBalancer;
 import com.google.common.collect.Lists;
 import org.apache.logging.log4j.util.Strings;
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -35,34 +33,24 @@ public class TestLoadBalanceRule {
 		}
 	}
 
-	List<TestServer> serverList = null;
-	Map<String, AtomicInteger> selResult = null;
-
-	@Before
-	public void init() {
-		serverList = Lists.newArrayList(
+	private static List<TestServer> init() {
+		return Lists.newArrayList(
 				new TestServer("1", 5),
 				new TestServer("2", 2),
 				new TestServer("3", 3)
 		);
-
-		selResult = new HashMap<>();
-		for (int i = 0; i < serverList.size(); ++i) {
-			selResult.put(serverList.get(i).getId(), new AtomicInteger(0));
-		}
-	}
-
-	@After
-	public void close() {
-		this.serverList.clear();
-		this.selResult.clear();
 	}
 
 	@Test
 	public void testNginxRoundRobinRule() {
+		Map<String, AtomicInteger> selResult = new HashMap<>();
+		List<TestServer> serverList = init();
+
 		NginxRoundRobinBalancer<TestServer> x = new NginxRoundRobinBalancer<>();
+
 		for (TestServer server : serverList) {
 			x.addServer(server);
+			selResult.put(server.getId(), new AtomicInteger(0));
 		}
 		for (int i = 0; i < 100; ++i) {
 			TestServer sel = x.choose();
@@ -76,7 +64,7 @@ public class TestLoadBalanceRule {
 
 	@Test
 	public void testNginxRoundRobinRule2() {
-		serverList = Lists.newArrayList(
+		List<TestServer> serverList = Lists.newArrayList(
 				new TestServer("a", 5),
 				new TestServer("b", 1),
 				new TestServer("c", 1)
@@ -114,9 +102,13 @@ public class TestLoadBalanceRule {
 
 	@Test
 	public void testRoundRobinRule() {
+		Map<String, AtomicInteger> selResult = new HashMap<>();
+		List<TestServer> serverList = init();
+
 		RoundRobinBalancer<TestServer> rule = new RoundRobinBalancer<>();
 		for (TestServer server : serverList) {
 			rule.addServer(server);
+			selResult.put(server.getId(), new AtomicInteger(0));
 		}
 
 		for (int i = 0; i < 100; ++i) {
@@ -131,9 +123,13 @@ public class TestLoadBalanceRule {
 
 	@Test
 	public void testLvsRoundRobinRule() {
+		Map<String, AtomicInteger> selResult = new HashMap<>();
+		List<TestServer> serverList = init();
+
 		LvsRoundRobinBalancer<TestServer> rule = new LvsRoundRobinBalancer<>();
 		for (TestServer server : serverList) {
 			rule.addServer(server);
+			selResult.put(server.getId(), new AtomicInteger(0));
 		}
 
 		for (int i = 0; i < 100; ++i) {
