@@ -29,6 +29,7 @@ public class RoundRobinBalancer<T extends Server> extends AbsLoadBalancer<T> {
 			if (sel.weight() > 0) {
 				return sel;
 			}
+			sel = null;
 			++j;
 		}
 
