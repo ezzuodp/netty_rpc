@@ -13,22 +13,19 @@ import java.util.concurrent.locks.ReentrantLock;
  * @date 2018/4/13
  */
 public abstract class AbsLoadBalancer<T extends Server> implements LoadBalanceRule<T> {
-	private final ReentrantLock lock = new ReentrantLock();
 	private volatile List<T> serverList = null;
 
 	public AbsLoadBalancer() {
-		this.serverList = new ArrayList<>();
+		this.serverList = new ArrayList<>(16);
 	}
 
 	public void addServer(T server) {
-		lock.lock();
-		try {
-			List<T> newList = new ArrayList<>(this.serverList);
-			newList.add(server);
-			this.serverList = newList;
-		} finally {
-			lock.unlock();
-		}
+		if (server == null) return;
+
+		List<T> newList = new ArrayList<>(this.getServerList());
+		newList.add(server);
+
+		this.serverList = newList;
 	}
 
 	@Override

@@ -21,21 +21,19 @@ public class LvsRoundRobinBalancer<T extends Server> extends AbsLoadBalancer<T> 
 	}
 
 	@Override
-	public void addServer(T server) {
+	public synchronized void addServer(T server) {
 		super.addServer(server);
 
 		if (server.weight() > 0) {
-			synchronized (this) {
-				if (gcd == 0) {
-					this.i = -1;
-					this.gcd = server.weight();
+			if (gcd == 0) {
+				this.i = -1;
+				this.gcd = server.weight();
+				this.maxw = server.weight();
+				this.cw = 0;
+			} else {
+				this.gcd = gcd(this.gcd, server.weight());
+				if (this.maxw < server.weight()) {
 					this.maxw = server.weight();
-					this.cw = 0;
-				} else {
-					this.gcd = gcd(this.gcd, server.weight());
-					if (this.maxw < server.weight()) {
-						this.maxw = server.weight();
-					}
 				}
 			}
 		}
