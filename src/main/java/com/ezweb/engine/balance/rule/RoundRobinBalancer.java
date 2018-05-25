@@ -23,15 +23,14 @@ public class RoundRobinBalancer<T extends Server> extends AbsLoadBalancer<T> {
 		int n = list.size();
 		int j = this.last.getAndIncrement();
 		T sel = null;
-		do {
+		for (int i = 0; i < n; ++i) {
 			j = j % n;
 			sel = list.get(j);
 			if (sel.weight() > 0) {
 				return sel;
 			}
-			--n;
 			++j;
-		} while (n > 0);
+		}
 
 		return sel;
 	}
