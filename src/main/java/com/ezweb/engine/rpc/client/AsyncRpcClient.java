@@ -72,6 +72,7 @@ public class AsyncRpcClient extends RpcClient {
 			}
 
 			CustTMessage req_msg = CustTMessage.newRequestMessage();
+			req_msg.setCodeType(getProtocol().codeType());
 			req_msg.setBody(reqBytes);
 			req_msg.setLen(reqBytes.limit());
 

@@ -59,7 +59,7 @@ public class RpcProtocolProcessorImpl implements RpcProtocolProcessor {
 		ByteBuffer byteBuf = rpcCodeProtocol.encodeResponse(res);
 
 		CustTMessage resmsg = CustTMessage.newResponseMessage();
-		resmsg.setCodeType(reqmsg.getCodeType()); // rpcCodeProtocol encodeRes
+		resmsg.setCodeType(rpcCodeProtocol.codeType());
 		resmsg.setSeqId(reqmsg.getSeqId());
 		resmsg.setLen(byteBuf.limit());
 		resmsg.setBody(byteBuf);

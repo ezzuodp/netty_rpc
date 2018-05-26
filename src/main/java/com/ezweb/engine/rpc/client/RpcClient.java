@@ -65,6 +65,7 @@ public class RpcClient {
 			try {
 				ByteBuffer byteBuf = protocol.encodeRequest(request);
 				CustTMessage req_msg = CustTMessage.newRequestMessage();
+				req_msg.setCodeType(protocol.codeType());
 				req_msg.setBody(byteBuf);
 				req_msg.setLen(byteBuf.limit());
 

@@ -1,9 +1,16 @@
 package com.ezweb.engine.rpc;
 
+import com.ezweb.engine.CustCodeType;
+
 import java.nio.ByteBuffer;
 
 
 public interface RpcProtocolCode {
+
+	default byte codeType() {
+		return CustCodeType.NORMAL;
+	}
+
 	/**
 	 * encode ByteBuffer to RPCObject
 	 */

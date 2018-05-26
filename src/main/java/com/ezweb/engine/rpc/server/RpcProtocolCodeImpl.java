@@ -60,6 +60,7 @@ public class RpcProtocolCodeImpl implements RpcProtocolCode {
 		}
 		bytes.flush();
 
+		buf.flip();
 		return buf;
 	}
 
@@ -92,6 +93,8 @@ public class RpcProtocolCodeImpl implements RpcProtocolCode {
 			bytes.writeByteArrayNoTag(serialization.encode(orig.getValue()));
 		}
 		bytes.flush();
+
+		buf.flip();
 		return buf;
 	}
 }

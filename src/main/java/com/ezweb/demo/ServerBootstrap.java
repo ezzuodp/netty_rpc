@@ -27,7 +27,7 @@ public class ServerBootstrap {
 
 		RpcServerHandlerCreator serverHandlerCreator = new RpcServerHandlerCreator();
 		serverHandlerCreator.addRpcHandler(rpcHandler);
-		serverHandlerCreator.addRpcProtocol(CustCodeType.NORMAL, normalRpcCodeProtocol);
+		serverHandlerCreator.addRpcProtocol(normalRpcCodeProtocol);
 
 		NettyServer nettyServer = new NettyServer(serverHandlerCreator);
 		nettyServer.serve(9000);
