@@ -10,6 +10,7 @@ import com.ezweb.engine.rpc.RpcRequest;
 import com.ezweb.engine.rpc.RpcResponse;
 import com.ezweb.engine.rpc.asm.Proxy;
 import com.ezweb.engine.rpc.simple.Invoker;
+import com.ezweb.engine.rpc.simple.PrefixUtils;
 
 import java.nio.ByteBuffer;
 
@@ -38,7 +39,7 @@ public class RpcClient {
 	}
 
 	public <T> T createRef(Class<T> importInterface) {
-		return this.createRef("/default", importInterface);
+		return this.createRef(PrefixUtils.DEFAULT, importInterface);
 	}
 
 	public <T> T createRef(String prefix, Class<T> importInterface) {

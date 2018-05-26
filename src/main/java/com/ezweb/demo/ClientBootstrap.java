@@ -35,65 +35,67 @@ public class ClientBootstrap {
 		// 同步写入并取回这个条结果.
 
 		NettyClient socket_client = new NettyClient();
-		socket_client.connect("localhost", 9000);
+		try {
+			socket_client.connect("localhost", 9000);
+			RpcProtocolCode protocol = new RpcProtocolCodeImpl(new KryoSerializationImpl());
 
-		RpcProtocolCode protocol = new RpcProtocolCodeImpl(new KryoSerializationImpl());
+			{
+				RpcClient rpcClient = new RpcClient();
 
-		{
-			RpcClient rpcClient = new RpcClient();
+				rpcClient.setProtocol(protocol);
+				rpcClient.setNettyClient(socket_client);
 
-			rpcClient.setProtocol(protocol);
-			rpcClient.setNettyClient(socket_client);
+				Hello helloProxy = rpcClient.createRef("/v2", Hello.class);
 
-			Hello helloProxy = rpcClient.createRef("/v1", Hello.class);
-
-			for (int i = 0; i < 1000; ++i) {
-				try {
-					TimeResult timeResult = helloProxy.say("interface say", System.currentTimeMillis());
-					logger.info("timeResult.num = {}, {}", i, timeResult.getTime());
-				} catch (Exception e) {
-					logger.info("同步调用：返回异常:", e);
+				for (int i = 0; i < 1000; ++i) {
+					try {
+						TimeResult timeResult = helloProxy.say("interface say", System.currentTimeMillis());
+						logger.info("timeResult.num = {}, {}", i, timeResult.getTime());
+					} catch (Exception e) {
+						logger.info("同步调用，返回异常:", e);
+					}
 				}
 			}
-		}
-		{
-			AsyncRpcClient rpcClient = new AsyncRpcClient(8);
+			/*
+			{
+				AsyncRpcClient rpcClient = new AsyncRpcClient(8);
 
-			rpcClient.setProtocol(protocol);
-			rpcClient.setNettyClient(socket_client);
+				rpcClient.setProtocol(protocol);
+				rpcClient.setNettyClient(socket_client);
 
-			HelloAsync helloProxy = rpcClient.createRef("/v2", HelloAsync.class);
+				HelloAsync helloProxy = rpcClient.createRef("/v2", HelloAsync.class);
 
-			int j = 0;
-			for (int i = 0; i < 128; ++i) {
+				int j = 0;
+				for (int i = 0; i < 128; ++i) {
 
-				CompletableFuture<TimeResult> timeResultFuture = helloProxy.say("interface say", System.currentTimeMillis());
-				++j;
-				class ConsumerImpl implements BiConsumer<TimeResult, Throwable> {
-					private final int _num;
+					CompletableFuture<TimeResult> timeResultFuture = helloProxy.say("interface say", System.currentTimeMillis());
+					++j;
+					class ConsumerImpl implements BiConsumer<TimeResult, Throwable> {
+						private final int _num;
 
-					public ConsumerImpl(int _num) {
-						this._num = _num;
-					}
+						public ConsumerImpl(int _num) {
+							this._num = _num;
+						}
 
-					@Override
-					public void accept(TimeResult timeResult, Throwable throwable) {
-						if (throwable != null) {
-							// 这儿的throwable是CompletableException.
-							logger.error("timeResultFuture.num = {}:{}", _num, throwable.getMessage());
-						} else {
-							// System.out.println(Thread.currentThread().getName());
-							logger.info("timeResultFuture.num = {}, {}", _num, timeResult.getTime());
+						@Override
+						public void accept(TimeResult timeResult, Throwable throwable) {
+							if (throwable != null) {
+								// 这儿的throwable是CompletableException.
+								logger.error("timeResultFuture.num = {}:{}", _num, throwable.getMessage());
+							} else {
+								// System.out.println(Thread.currentThread().getName());
+								logger.info("timeResultFuture.num = {}, {}", _num, timeResult.getTime());
+							}
 						}
 					}
+					timeResultFuture.whenCompleteAsync(new ConsumerImpl(i), async_pool);
+					if (j % 32 == 0) TimeUnit.SECONDS.sleep(1L); // 并发32个.
 				}
-				timeResultFuture.whenCompleteAsync(new ConsumerImpl(i), async_pool);
-				if (j % 32 == 0) TimeUnit.SECONDS.sleep(1L); // 并发32个.
 			}
+			TimeUnit.SECONDS.sleep(2L);
+			*/
+		} finally {
+			socket_client.close();
 		}
-
-		TimeUnit.SECONDS.sleep(2L);
-
-		socket_client.close();
 	}
 }

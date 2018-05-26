@@ -17,6 +17,7 @@ import io.netty.util.concurrent.DefaultThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.Closeable;
 import java.nio.ByteBuffer;
 import java.util.concurrent.*;
 
@@ -24,7 +25,7 @@ import java.util.concurrent.*;
  * @author : zuodp
  * @version : 1.10
  */
-public class NettyClient {
+public class NettyClient implements Closeable {
 	private final static Logger logger = LoggerFactory.getLogger(NettyClient.class);
 
 	private final Bootstrap bootstrap = new Bootstrap();
@@ -43,7 +44,7 @@ public class NettyClient {
 		//this.defaultEventExecutorGroup = new DefaultEventExecutorGroup(16, new DefaultThreadFactory("NettyClientWorkerThread"));
 	}
 
-	public void connect(String inetHost, int inetPort) {
+	public void connect(String inetHost, int inetPort) throws Exception {
 		Bootstrap handler = this.bootstrap.group(this.eventLoopGroupWorker)
 				.channel(NioSocketChannel.class)
 				.option(ChannelOption.TCP_NODELAY, true)
@@ -66,18 +67,21 @@ public class NettyClient {
 			channelFuture.sync();
 			logger.info("connect {}:{} ok.", inetHost, inetPort);
 
-			heatbeatExe = Executors.newScheduledThreadPool(1, new DefaultThreadFactory("netty-client-heartbeat", true));
-			heatbeatExe.scheduleAtFixedRate(new NettyHeartbeatTask(), 30, 30, TimeUnit.SECONDS);
 		} catch (Exception e) {
 			logger.error("connect {}:{} error：", inetHost, inetPort, e);
+			throw e;
 		}
+
+		heatbeatExe = Executors.newScheduledThreadPool(1, new DefaultThreadFactory("netty-client-heartbeat", true));
+		heatbeatExe.scheduleAtFixedRate(new NettyHeartbeatTask(), 30, 30, TimeUnit.SECONDS);
 	}
 
+	@Override
 	public void close() {
 		logger.info("close channel:{}", this.channel);
 		this.channel.close();
 
-		heatbeatExe.shutdown();
+		if (heatbeatExe != null) heatbeatExe.shutdown();
 
 		Future<?> f = this.eventLoopGroupWorker.shutdownGracefully();
 		while (!f.isDone()) {
@@ -103,7 +107,6 @@ public class NettyClient {
 				}
 			}
 		}*/
-
 
 
 		logger.info("close channel:{} ok.", this.channel);
