@@ -12,7 +12,6 @@ import com.ezweb.engine.util.UnsignedUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.nio.ByteBuffer;
 import java.util.Random;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -35,8 +34,8 @@ public class TestBytes {
 
 		Serialization serialization = new KryoSerializationImpl();
 
-		byte[] bytes = serialization.encode(res);
-		RpcResponse v = serialization.decode(bytes);
+		byte[] bytes = serialization.encodeNoType(res);
+		RpcResponse v = serialization.decodeNoType(bytes, RpcResponse.class);
 
 		System.out.println("v = " + v);
 	}

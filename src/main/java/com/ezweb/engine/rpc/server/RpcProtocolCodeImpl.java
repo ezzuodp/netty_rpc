@@ -3,6 +3,7 @@ package com.ezweb.engine.rpc.server;
 import com.ezweb.engine.rpc.RpcProtocolCode;
 import com.ezweb.engine.rpc.RpcRequest;
 import com.ezweb.engine.rpc.RpcResponse;
+import com.ezweb.engine.rpc.asm.ReflectUtils;
 import com.ezweb.engine.rpc.serialize.Serialization;
 import com.google.protobuf.CodedInputStream;
 import com.google.protobuf.CodedOutputStream;
@@ -33,10 +34,12 @@ public class RpcProtocolCodeImpl implements RpcProtocolCode {
 		int argLen = bytes.readInt32();
 
 		if (argLen > 0) {
+			Class<?>[] argTypes = ReflectUtils.desc2classArray(rpcRequest.getMethodDesc());
 			Object[] args = new Object[argLen];
 			for (int i = 0; i < argLen; ++i) {
-				args[i] = this.serialization.decode(bytes.readByteArray());
+				args[i] = this.serialization.decodeNoType(bytes.readByteArray(), argTypes[i]);
 			}
+			rpcRequest.setArguments(args);
 		}
 		return rpcRequest;
 	}
@@ -56,7 +59,7 @@ public class RpcProtocolCodeImpl implements RpcProtocolCode {
 		bytes.writeInt32NoTag(len);
 
 		for (int i = 0; i < len; ++i) {
-			bytes.writeByteArrayNoTag(serialization.encode(arguments[i]));
+			bytes.writeByteArrayNoTag(serialization.encodeNoType(arguments[i]));
 		}
 		bytes.flush();
 
@@ -72,9 +75,9 @@ public class RpcProtocolCodeImpl implements RpcProtocolCode {
 
 		boolean haveException = bytes.readBool();
 		if (haveException) {
-			rpcResponse.setException(serialization.decode(bytes.readByteArray()));
+			rpcResponse.setException(serialization.decodeNoType(bytes.readByteArray()));
 		} else {
-			rpcResponse.setValue(serialization.decode(bytes.readByteArray()));
+			rpcResponse.setValue(serialization.decodeNoType(bytes.readByteArray()));
 		}
 		return rpcResponse;
 	}
