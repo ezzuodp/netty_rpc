@@ -1,6 +1,7 @@
 package com.ezweb.demo;
 
 import com.ezweb.demo.simple.Hello;
+import com.ezweb.demo.simple.HelloExtImpl;
 import com.ezweb.demo.simple.HelloImpl;
 import com.ezweb.engine.CustCodeType;
 import com.ezweb.engine.log.Log4j2System;
@@ -21,7 +22,8 @@ public class ServerBootstrap {
 		new Log4j2System("server").init(null);
 
 		RpcHandlerImpl rpcHandler = new RpcHandlerImpl();
-		rpcHandler.addExport(Hello.class, new HelloImpl());
+		rpcHandler.addExport("/v1", Hello.class, new HelloImpl());
+		rpcHandler.addExport("/v2", Hello.class, new HelloExtImpl());
 
 		RpcProtocolCode normalRpcCodeProtocol = new RpcProtocolCodeImpl(new KryoSerializationImpl());
 

@@ -8,6 +8,7 @@ import com.ezweb.engine.rpc.RpcRequest;
 import com.ezweb.engine.rpc.RpcResponse;
 import com.ezweb.engine.rpc.asm.Proxy;
 import com.ezweb.engine.rpc.simple.AsyncInvoker;
+import com.ezweb.engine.rpc.simple.PrefixUtils;
 import io.netty.util.concurrent.DefaultThreadFactory;
 
 import java.nio.ByteBuffer;
@@ -29,13 +30,18 @@ public class AsyncRpcClient extends RpcClient {
 
 	@Override
 	public <T> T createRef(Class<T> importInterface) {
+		return createRef(PrefixUtils.DEFAULT, importInterface);
+	}
+
+	@Override
+	public <T> T createRef(String prefix, Class<T> importInterface) {
 		// 生成一个client invoker.
 		Proxy proxy = Proxy.getProxy(importInterface);
 
 		AsyncInvoker<T> invoker = new AsyncInvokerClientImpl<>(importInterface);
 
 		//noinspection unchecked
-		return (T) proxy.newInstance(new AsyncInvocationHandlerImpl<>(importInterface, invoker));
+		return (T) proxy.newInstance(new AsyncInvocationHandlerImpl<>(prefix, importInterface, invoker));
 	}
 
 	private class AsyncInvokerClientImpl<T> implements AsyncInvoker<T> {

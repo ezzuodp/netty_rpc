@@ -38,13 +38,17 @@ public class RpcClient {
 	}
 
 	public <T> T createRef(Class<T> importInterface) {
+		return this.createRef("/default", importInterface);
+	}
+
+	public <T> T createRef(String prefix, Class<T> importInterface) {
 		// 生成一个client invoker.
 		Proxy proxy = Proxy.getProxy(importInterface);
 
 		Invoker<T> invoker = new InvokerClientImpl<T>(importInterface, protocol, nettyClient);
 
 		//noinspection unchecked
-		return (T) proxy.newInstance(new InvocationHandlerImpl<T>(importInterface, invoker));
+		return (T) proxy.newInstance(new InvocationHandlerImpl<T>(prefix, importInterface, invoker));
 	}
 
 	private static class InvokerClientImpl<T> implements Invoker<T> {

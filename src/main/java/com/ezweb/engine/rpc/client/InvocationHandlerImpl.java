@@ -4,6 +4,7 @@ import com.ezweb.engine.rpc.RpcRequest;
 import com.ezweb.engine.rpc.RpcResponse;
 import com.ezweb.engine.rpc.asm.ReflectUtils;
 import com.ezweb.engine.rpc.simple.Invoker;
+import com.ezweb.engine.rpc.simple.PrefixUtils;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -13,10 +14,12 @@ import java.lang.reflect.Method;
  * @version : 1.10
  */
 public class InvocationHandlerImpl<T> implements InvocationHandler {
+	private final String prefix;
 	private final Class<T> clz;
 	private final Invoker<T> rpcHandler;
 
-	InvocationHandlerImpl(Class<T> clz, Invoker<T> rpcHandler) {
+	InvocationHandlerImpl(String prefix, Class<T> clz, Invoker<T> rpcHandler) {
+		this.prefix = prefix;
 		this.clz = clz;
 		this.rpcHandler = rpcHandler;
 	}
@@ -28,7 +31,7 @@ public class InvocationHandlerImpl<T> implements InvocationHandler {
 		}
 
 		RpcRequest request = new RpcRequest();
-		request.setInterfaceName(clz.getName());
+		request.setInterfaceName(PrefixUtils.buildRefUrl(prefix, clz.getName()));
 		request.setMethodName(method.getName());
 		request.setMethodDesc(ReflectUtils.getRpcDesc(method));
 		request.setArguments(args);

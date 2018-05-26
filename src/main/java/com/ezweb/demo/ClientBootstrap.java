@@ -45,7 +45,7 @@ public class ClientBootstrap {
 			rpcClient.setProtocol(protocol);
 			rpcClient.setNettyClient(socket_client);
 
-			Hello helloProxy = rpcClient.createRef(Hello.class);
+			Hello helloProxy = rpcClient.createRef("/v1", Hello.class);
 
 			for (int i = 0; i < 1000; ++i) {
 				try {
@@ -62,7 +62,7 @@ public class ClientBootstrap {
 			rpcClient.setProtocol(protocol);
 			rpcClient.setNettyClient(socket_client);
 
-			HelloAsync helloProxy = rpcClient.createRef(HelloAsync.class);
+			HelloAsync helloProxy = rpcClient.createRef("/v2", HelloAsync.class);
 
 			int j = 0;
 			for (int i = 0; i < 128; ++i) {

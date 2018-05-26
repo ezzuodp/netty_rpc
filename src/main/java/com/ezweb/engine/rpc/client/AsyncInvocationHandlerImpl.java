@@ -5,6 +5,7 @@ import com.ezweb.engine.rpc.RpcRequest;
 import com.ezweb.engine.rpc.RpcResponse;
 import com.ezweb.engine.rpc.asm.ReflectUtils;
 import com.ezweb.engine.rpc.simple.AsyncInvoker;
+import com.ezweb.engine.rpc.simple.PrefixUtils;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -16,10 +17,12 @@ import java.util.concurrent.CompletableFuture;
  */
 class AsyncInvocationHandlerImpl<T> implements InvocationHandler {
 	private static final String ASYNC = "Async";
+	private final String prefix;
 	private final Class<T> clz;
 	private final AsyncInvoker<T> rpcHandler;
 
-	AsyncInvocationHandlerImpl(Class<T> clz, AsyncInvoker<T> rpcHandler) {
+	AsyncInvocationHandlerImpl(String prefix, Class<T> clz, AsyncInvoker<T> rpcHandler) {
+		this.prefix = prefix;
 		this.clz = clz;
 		this.rpcHandler = rpcHandler;
 	}
@@ -34,9 +37,9 @@ class AsyncInvocationHandlerImpl<T> implements InvocationHandler {
 		String interfaceName = clz.getName();
 		// 处理掉 "Async".
 		if (interfaceName.endsWith(ASYNC)) {
-			request.setInterfaceName(interfaceName.substring(0, interfaceName.length() - ASYNC.length()));
+			request.setInterfaceName(PrefixUtils.buildRefUrl(prefix, interfaceName.substring(0, interfaceName.length() - ASYNC.length())));
 		} else {
-			request.setInterfaceName(clz.getName());
+			request.setInterfaceName(PrefixUtils.buildRefUrl(prefix, interfaceName));
 		}
 		request.setMethodName(method.getName());
 		request.setMethodDesc(ReflectUtils.getRpcDesc(method));

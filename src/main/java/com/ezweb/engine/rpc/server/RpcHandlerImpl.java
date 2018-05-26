@@ -1,12 +1,13 @@
 package com.ezweb.engine.rpc.server;
 
 import com.ezweb.engine.exception.TBizException;
-import com.ezweb.engine.rpc.simple.Invoker;
 import com.ezweb.engine.rpc.RpcHandler;
 import com.ezweb.engine.rpc.RpcRequest;
 import com.ezweb.engine.rpc.RpcResponse;
 import com.ezweb.engine.rpc.asm.ReflectUtils;
 import com.ezweb.engine.rpc.asm.Wrapper;
+import com.ezweb.engine.rpc.simple.Invoker;
+import com.ezweb.engine.rpc.simple.PrefixUtils;
 import com.google.common.collect.Maps;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,10 +26,14 @@ public class RpcHandlerImpl implements RpcHandler {
 	}
 
 	public <T> void addExport(Class<T> interfaceClass, T interfaceInstance) {
-		Logger.info("导出:{} ...", interfaceClass.getName());
+		this.addExport(PrefixUtils.DEFAULT, interfaceClass, interfaceInstance);
+	}
+
+	public <T> void addExport(String prefix, Class<T> interfaceClass, T interfaceInstance) {
+		Logger.info("导出:{}/{} ...", prefix, interfaceClass.getName());
 
 		Invoker<T> invoker = new SyncRpcHandlerImpl<T>(interfaceInstance, interfaceClass);
-		invokerMap.putIfAbsent(interfaceClass.getName(), invoker);
+		invokerMap.putIfAbsent(PrefixUtils.buildServiceUrl(prefix, interfaceClass), invoker);
 	}
 
 	@Override
