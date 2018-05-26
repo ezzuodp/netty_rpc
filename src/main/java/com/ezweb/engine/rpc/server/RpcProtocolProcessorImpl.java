@@ -2,6 +2,7 @@ package com.ezweb.engine.rpc.server;
 
 import com.ezweb.engine.CustTMessage;
 import com.ezweb.engine.exception.TBizException;
+import com.ezweb.engine.exception.TSerializeException;
 import com.ezweb.engine.rpc.*;
 import com.google.common.collect.Maps;
 
@@ -45,12 +46,19 @@ public class RpcProtocolProcessorImpl implements RpcProtocolProcessor {
 	@Override
 	public CustTMessage doProcess(CustTMessage reqmsg) throws Exception {
 		RpcProtocolCode rpcCodeProtocol = getRpcProtocol(reqmsg.getCodeType());
-		RpcHandler rpcHandler = getRpcHandler();
 
-		RpcRequest req = rpcCodeProtocol.decodeRequest(reqmsg.getBody());
+		RpcRequest req = null;
 		RpcResponse res = null;
 		try {
-			res = rpcHandler.doRequest(req);
+			req = rpcCodeProtocol.decodeRequest(reqmsg.getBody());
+		} catch (Exception e) {
+			res = new RpcResponse();
+			res.setException(new TSerializeException(e.getMessage()));
+		}
+
+		try {
+			// 执行req调用.
+			res = getRpcHandler().doRequest(req);
 		} catch (Exception e) {
 			res = new RpcResponse();
 			res.setException(new TBizException(e.getMessage()));
