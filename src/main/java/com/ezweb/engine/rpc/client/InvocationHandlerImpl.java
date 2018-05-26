@@ -1,8 +1,8 @@
 package com.ezweb.engine.rpc.client;
 
+import com.ezweb.engine.rpc.RpcRequest;
 import com.ezweb.engine.rpc.RpcResponse;
 import com.ezweb.engine.rpc.asm.ReflectUtils;
-import com.ezweb.engine.rpc.simple.DefaultRpcRequest;
 import com.ezweb.engine.rpc.simple.Invoker;
 
 import java.lang.reflect.InvocationHandler;
@@ -13,29 +13,29 @@ import java.lang.reflect.Method;
  * @version : 1.10
  */
 public class InvocationHandlerImpl<T> implements InvocationHandler {
-    private final Class<T> clz;
-    private final Invoker<T> rpcHandler;
+	private final Class<T> clz;
+	private final Invoker<T> rpcHandler;
 
-    InvocationHandlerImpl(Class<T> clz, Invoker<T> rpcHandler) {
-        this.clz = clz;
-        this.rpcHandler = rpcHandler;
-    }
+	InvocationHandlerImpl(Class<T> clz, Invoker<T> rpcHandler) {
+		this.clz = clz;
+		this.rpcHandler = rpcHandler;
+	}
 
-    @Override
-    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        if (HandlerUtils.isLocalMethod(clz, method)) {
-            throw new IllegalAccessException("can not invoke local method:" + method.getName());
-        }
+	@Override
+	public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+		if (HandlerUtils.isLocalMethod(clz, method)) {
+			throw new IllegalAccessException("can not invoke local method:" + method.getName());
+		}
 
-        DefaultRpcRequest request = new DefaultRpcRequest();
-        request.setInterfaceName(clz.getName());
-        request.setMethodName(method.getName());
-        request.setMethodDesc(ReflectUtils.getRpcDesc(method));
-        request.setArguments(args);
+		RpcRequest request = new RpcRequest();
+		request.setInterfaceName(clz.getName());
+		request.setMethodName(method.getName());
+		request.setMethodDesc(ReflectUtils.getRpcDesc(method));
+		request.setArguments(args);
 
-        RpcResponse response = this.rpcHandler.invoke(request);
-        // 如果有异常
-        if (response.getException() != null) throw response.getException();
-        return response.getValue();
-    }
+		RpcResponse response = this.rpcHandler.invoke(request);
+		// 如果有异常
+		if (response.getException() != null) throw response.getException();
+		return response.getValue();
+	}
 }

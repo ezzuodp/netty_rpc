@@ -2,10 +2,10 @@ package com.ezweb.engine;
 
 import com.ezweb.demo.simple.Hello;
 import com.ezweb.engine.exception.TBizException;
+import com.ezweb.engine.rpc.RpcResponse;
 import com.ezweb.engine.rpc.asm.ReflectUtils;
-import com.ezweb.engine.rpc.serialize.kryo.KryoDecoder;
-import com.ezweb.engine.rpc.serialize.kryo.KryoEncoder;
-import com.ezweb.engine.rpc.simple.DefaultRpcResponse;
+import com.ezweb.engine.rpc.serialize.Serialization;
+import com.ezweb.engine.rpc.serialize.kryo.KryoSerializationImpl;
 import com.ezweb.engine.util.ByteUtils;
 import com.ezweb.engine.util.PureJavaCrc32;
 import com.ezweb.engine.util.UnsignedUtils;
@@ -30,16 +30,14 @@ public class TestBytes {
 		String desc = ReflectUtils.getRpcDesc(c.getMethod("say", String.class, Long.TYPE));
 		Assert.assertEquals(desc, "(Ljava/lang/String;J)");
 
-		DefaultRpcResponse res = new DefaultRpcResponse();
+		RpcResponse res = new RpcResponse();
 		res.setException(new TBizException("xzzzzzzzzzz"));
 
-		ByteBuffer buf = ByteBuffer.allocate(256);
-		KryoEncoder encoder = new KryoEncoder();
-		encoder.encode(res, buf);
+		Serialization serialization = new KryoSerializationImpl();
 
-		buf.flip();
-		KryoDecoder decoder = new KryoDecoder();
-		DefaultRpcResponse v = (DefaultRpcResponse) decoder.decode(DefaultRpcResponse.class.getName(), buf);
+		byte[] bytes = serialization.encode(res);
+		RpcResponse v = serialization.decode(bytes);
+
 		System.out.println("v = " + v);
 	}
 

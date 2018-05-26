@@ -7,7 +7,6 @@ import com.ezweb.engine.rpc.RpcRequest;
 import com.ezweb.engine.rpc.RpcResponse;
 import com.ezweb.engine.rpc.asm.Proxy;
 import com.ezweb.engine.rpc.simple.AsyncInvoker;
-import com.ezweb.engine.rpc.simple.DefaultRpcResponse;
 import io.netty.util.concurrent.DefaultThreadFactory;
 
 import java.nio.ByteBuffer;
@@ -52,36 +51,34 @@ public class AsyncRpcClient extends RpcClient {
 
 		@Override
 		public CompletableFuture<RpcResponse> invoke(RpcRequest request) {
-			ByteBuffer byteBuf;
-			try {
-				byteBuf = getProtocol().encodeReq(request);
-			} catch (Exception e) {
-				DefaultRpcResponse response = new DefaultRpcResponse();
-				response.setException(e);
-				return CompletableFuture.completedFuture(response);
-			}
-
-			CustTMessage req_msg = CustTMessage.newRequestMessage();
-			req_msg.setBody(byteBuf);
-			req_msg.setLen(byteBuf.limit());
-
-			return CompletableFuture.supplyAsync(new RpcResponseSupplier(req_msg), async_pool);
+			return CompletableFuture.supplyAsync(new RpcResponseSupplier(request), async_pool);
 		}
 	}
 
 	private class RpcResponseSupplier implements Supplier<RpcResponse> {
-		private final CustTMessage req_msg;
+		private final RpcRequest request;
 
-		RpcResponseSupplier(CustTMessage req_msg) {
-			this.req_msg = req_msg;
+		public RpcResponseSupplier(RpcRequest request) {
+			this.request = request;
 		}
 
 		@Override
 		public RpcResponse get() {
+			ByteBuffer reqBytes;
+			try {
+				reqBytes = getProtocol().encodeRequest(this.request);
+			} catch (Exception e) {
+				throw new TSendRequestException(e.getMessage());
+			}
+
+			CustTMessage req_msg = CustTMessage.newRequestMessage();
+			req_msg.setBody(reqBytes);
+			req_msg.setLen(reqBytes.limit());
+
 			RpcResponse response = null;
 			try {
 				CustTMessage resp_msg = getNettyClient().writeReq(req_msg, 10 * 1000);
-				response = getProtocol().decodeRes(resp_msg.getBody());
+				response = getProtocol().decodeResponse(resp_msg.getBody());
 				return response;
 				// 所有异常全部 throw.
 			} catch (TSendRequestException | TTimeoutException e) {

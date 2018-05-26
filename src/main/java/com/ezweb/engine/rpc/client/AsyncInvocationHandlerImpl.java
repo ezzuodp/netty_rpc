@@ -1,10 +1,10 @@
 package com.ezweb.engine.rpc.client;
 
 import com.ezweb.engine.exception.TBizException;
+import com.ezweb.engine.rpc.RpcRequest;
 import com.ezweb.engine.rpc.RpcResponse;
 import com.ezweb.engine.rpc.asm.ReflectUtils;
 import com.ezweb.engine.rpc.simple.AsyncInvoker;
-import com.ezweb.engine.rpc.simple.DefaultRpcRequest;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -30,7 +30,7 @@ class AsyncInvocationHandlerImpl<T> implements InvocationHandler {
 			throw new IllegalAccessException("can not invoke local method:" + method.getName());
 		}
 
-		DefaultRpcRequest request = new DefaultRpcRequest();
+		RpcRequest request = new RpcRequest();
 		String interfaceName = clz.getName();
 		// 处理掉 "Async".
 		if (interfaceName.endsWith(ASYNC)) {

@@ -7,7 +7,6 @@ import com.ezweb.engine.rpc.RpcRequest;
 import com.ezweb.engine.rpc.RpcResponse;
 import com.ezweb.engine.rpc.asm.ReflectUtils;
 import com.ezweb.engine.rpc.asm.Wrapper;
-import com.ezweb.engine.rpc.simple.DefaultRpcResponse;
 import com.google.common.collect.Maps;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,7 +54,7 @@ public class RpcHandlerImpl implements RpcHandler {
 
 		@Override
 		public RpcResponse invoke(RpcRequest request) {
-			DefaultRpcResponse rpcResponse = new DefaultRpcResponse();
+			RpcResponse rpcResponse = new RpcResponse();
 			try {
 				Class<?>[] argTypes = ReflectUtils.desc2classArray(request.getMethodDesc());
 				Object val = wrapper.invokeMethod(this.ref, request.getMethodName(), argTypes, request.getArguments());

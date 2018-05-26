@@ -2,9 +2,10 @@ package com.ezweb.engine.rpc.client;
 
 import com.ezweb.engine.CustTMessage;
 import com.ezweb.engine.client.NettyClient;
-import com.ezweb.engine.rpc.*;
+import com.ezweb.engine.rpc.RpcProtocolCode;
+import com.ezweb.engine.rpc.RpcRequest;
+import com.ezweb.engine.rpc.RpcResponse;
 import com.ezweb.engine.rpc.asm.Proxy;
-import com.ezweb.engine.rpc.simple.DefaultRpcResponse;
 import com.ezweb.engine.rpc.simple.Invoker;
 
 import java.nio.ByteBuffer;
@@ -15,13 +16,13 @@ import java.nio.ByteBuffer;
  */
 public class RpcClient {
 	private NettyClient nettyClient;
-	private RpcProtocol protocol;
+	private RpcProtocolCode protocol;
 
 	public void setNettyClient(NettyClient nettyClient) {
 		this.nettyClient = nettyClient;
 	}
 
-	public void setProtocol(RpcProtocol protocol) {
+	public void setProtocol(RpcProtocolCode protocol) {
 		this.protocol = protocol;
 	}
 
@@ -29,7 +30,7 @@ public class RpcClient {
 		return nettyClient;
 	}
 
-	public RpcProtocol getProtocol() {
+	public RpcProtocolCode getProtocol() {
 		return protocol;
 	}
 
@@ -45,10 +46,10 @@ public class RpcClient {
 
 	private static class InvokerClientImpl<T> implements Invoker<T> {
 		private Class<T> type = null;
-		private RpcProtocol protocol = null;
+		private RpcProtocolCode protocol = null;
 		private NettyClient client = null;
 
-		public InvokerClientImpl(Class<T> type, RpcProtocol protocol, NettyClient client) {
+		public InvokerClientImpl(Class<T> type, RpcProtocolCode protocol, NettyClient client) {
 			this.type = type;
 			this.protocol = protocol;
 			this.client = client;
@@ -62,16 +63,16 @@ public class RpcClient {
 		@Override
 		public RpcResponse invoke(RpcRequest request) {
 			try {
-				ByteBuffer byteBuf = protocol.encodeReq(request);
+				ByteBuffer byteBuf = protocol.encodeRequest(request);
 				CustTMessage req_msg = CustTMessage.newRequestMessage();
 				req_msg.setBody(byteBuf);
 				req_msg.setLen(byteBuf.limit());
 
 				CustTMessage res_msg = this.client.writeReq(req_msg, 10 * 1000);
-				RpcResponse response = protocol.decodeRes(res_msg.getBody());
+				RpcResponse response = protocol.decodeResponse(res_msg.getBody());
 				return response;
 			} catch (Exception e) {
-				DefaultRpcResponse response = new DefaultRpcResponse();
+				RpcResponse response = new RpcResponse();
 				response.setException(e);
 				return response;
 			}

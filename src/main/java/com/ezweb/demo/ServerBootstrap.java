@@ -1,16 +1,15 @@
 package com.ezweb.demo;
 
-import com.ezweb.engine.CustProtoType;
-import com.ezweb.engine.log.Log4j2System;
-import com.ezweb.engine.rpc.RpcProtocol;
-import com.ezweb.engine.rpc.serialize.kryo.KryoDecoder;
-import com.ezweb.engine.rpc.serialize.kryo.KryoEncoder;
-import com.ezweb.engine.rpc.server.RpcHandlerImpl;
-import com.ezweb.engine.rpc.server.RpcProtocolImpl;
-import com.ezweb.engine.rpc.server.RpcServerHandlerCreator;
-import com.ezweb.engine.server.NettyServer;
 import com.ezweb.demo.simple.Hello;
 import com.ezweb.demo.simple.HelloImpl;
+import com.ezweb.engine.CustCodeType;
+import com.ezweb.engine.log.Log4j2System;
+import com.ezweb.engine.rpc.RpcProtocolCode;
+import com.ezweb.engine.rpc.serialize.kryo.KryoSerializationImpl;
+import com.ezweb.engine.rpc.server.RpcProtocolCodeImpl;
+import com.ezweb.engine.rpc.server.RpcHandlerImpl;
+import com.ezweb.engine.rpc.server.RpcServerHandlerCreator;
+import com.ezweb.engine.server.NettyServer;
 
 /**
  * @author : zuodp
@@ -18,20 +17,20 @@ import com.ezweb.demo.simple.HelloImpl;
  */
 public class ServerBootstrap {
 
-    public static void main(String[] args) throws InterruptedException {
-        new Log4j2System("server").init(null);
+	public static void main(String[] args) throws InterruptedException {
+		new Log4j2System("server").init(null);
 
-        RpcHandlerImpl rpcHandler = new RpcHandlerImpl();
-        rpcHandler.addExport(Hello.class, new HelloImpl());
+		RpcHandlerImpl rpcHandler = new RpcHandlerImpl();
+		rpcHandler.addExport(Hello.class, new HelloImpl());
 
-        RpcProtocol kryoProtocol = new RpcProtocolImpl(new KryoDecoder(), new KryoEncoder());
+		RpcProtocolCode normalRpcCodeProtocol = new RpcProtocolCodeImpl(new KryoSerializationImpl());
 
-        RpcServerHandlerCreator serverHandlerCreator = new RpcServerHandlerCreator();
-        serverHandlerCreator.addRpcProtocol(CustProtoType.KRYO, kryoProtocol);
-        serverHandlerCreator.addRpcHandler(CustProtoType.KRYO, rpcHandler);
+		RpcServerHandlerCreator serverHandlerCreator = new RpcServerHandlerCreator();
+		serverHandlerCreator.addRpcHandler(rpcHandler);
+		serverHandlerCreator.addRpcProtocol(CustCodeType.NORMAL, normalRpcCodeProtocol);
 
-        NettyServer nettyServer = new NettyServer(serverHandlerCreator);
-        nettyServer.serve(9000);
-        nettyServer.waitForClose();
-    }
+		NettyServer nettyServer = new NettyServer(serverHandlerCreator);
+		nettyServer.serve(9000);
+		nettyServer.waitForClose();
+	}
 }

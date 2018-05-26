@@ -33,12 +33,12 @@ public class NettyEncoder extends MessageToByteEncoder<CustTMessage> {
 		out.writeShort(msg.getMagic());
 		int vt = msg.getVersion() << 4 | msg.getType();
 		out.writeByte(vt);
-		out.writeByte(msg.getProtoType());
+		out.writeByte(msg.getCodeType());
 		out.writeInt(msg.getSeqId());
 		out.writeInt(msg.getLen());
 
 		// crc32
-		long crc32 = calcCrc32(msg.getVersion(), msg.getType(), msg.getProtoType(), msg.getSeqId(), msg.getLen(), msg.getBody());// crc32 => uint32_t.
+		long crc32 = calcCrc32(msg.getVersion(), msg.getType(), msg.getCodeType(), msg.getSeqId(), msg.getLen(), msg.getBody());// crc32 => uint32_t.
 		out.writeBytes(UnsignedUtils.uint32ToBytes(crc32));
 
 		// body

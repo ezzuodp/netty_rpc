@@ -7,9 +7,9 @@ import com.ezweb.engine.CustTMessage;
  * @version : 1.10
  */
 public interface RpcProtocolProcessor {
-	void addRpcProtocol(Byte protoType, RpcProtocol rpcProtocol);
+	void addRpcProtocol(Byte codeType, RpcProtocolCode rpcProtocol);
 
-	void addRpcHandler(Byte protoType, RpcHandler rpcHandler);
+	void setRpcHandler(RpcHandler rpcHandler);
 
 	CustTMessage doProcess(CustTMessage msg) throws Exception;
 

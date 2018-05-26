@@ -18,7 +18,7 @@ public class CustTMessage {
 	private short magic = (short) MAGIC;
 	private byte version = CustTVersion.VERSION_1;
 	private byte type = 0;                      // 请求类型：CALL | REPLY | EXCEPTION
-	private byte protoType = CustProtoType.KRYO;// 协议类型
+	private byte codeType = CustCodeType.NORMAL;// 协议编码类型
 	private int seqId = 0;                      // 请求顺序号
 	private int len = 0;                        // body.len
 	private ByteBuffer body = null;
@@ -84,12 +84,12 @@ public class CustTMessage {
 		return this;
 	}
 
-	public byte getProtoType() {
-		return protoType;
+	public byte getCodeType() {
+		return codeType;
 	}
 
-	public void setProtoType(byte protoType) {
-		this.protoType = protoType;
+	public void setCodeType(byte codeType) {
+		this.codeType = codeType;
 	}
 
 	@Override

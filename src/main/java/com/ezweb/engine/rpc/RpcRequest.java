@@ -5,20 +5,41 @@ package com.ezweb.engine.rpc;
  * @date 2017-08-07
  * @since 1.0.0
  */
-public interface RpcRequest {
-    String getInterfaceName();
+public class RpcRequest {
+	private String interfaceName;
+	private String methodName;
+	private String methodDesc;
+	private Object[] arguments;
 
-    void setInterfaceName(String interfaceName);
+	public String getInterfaceName() {
+		return interfaceName;
+	}
 
-    String getMethodName();
+	public void setInterfaceName(String interfaceName) {
+		this.interfaceName = interfaceName;
+	}
 
-    void setMethodName(String methodName);
+	public String getMethodName() {
+		return methodName;
+	}
 
-    String getMethodDesc();
+	public void setMethodName(String methodName) {
+		this.methodName = methodName;
+	}
 
-    void setMethodDesc(String methodDesc);
+	public String getMethodDesc() {
+		return methodDesc;
+	}
 
-    Object[] getArguments();
+	public void setMethodDesc(String methodDesc) {
+		this.methodDesc = methodDesc;
+	}
 
-    void setArguments(Object[] arguments);
+	public Object[] getArguments() {
+		return arguments;
+	}
+
+	public void setArguments(Object[] arguments) {
+		this.arguments = arguments;
+	}
 }

@@ -59,7 +59,7 @@ public class NettyDecoder extends LengthFieldBasedFrameDecoder {
 				CustTMessage msg = new CustTMessage();
 				msg.setVersion(ver);
 				msg.setType(type);
-				msg.setProtoType(protoType);
+				msg.setCodeType(protoType);
 				msg.setSeqId(seqId);
 				msg.setLen(len);
 				msg.setBody(body);

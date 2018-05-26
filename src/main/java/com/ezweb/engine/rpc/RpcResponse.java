@@ -5,12 +5,23 @@ package com.ezweb.engine.rpc;
  * @date 2017-08-07
  * @since 1.0.0
  */
-public interface RpcResponse {
-    Object getValue();
+public class RpcResponse {
+	private Object value;
+	private Exception exception;
 
-    void setValue(Object value);
+	public Object getValue() {
+		return value;
+	}
 
-    Exception getException();
+	public void setValue(Object value) {
+		this.value = value;
+	}
 
-    void setException(Exception exception);
+	public Exception getException() {
+		return exception;
+	}
+
+	public void setException(Exception exception) {
+		this.exception = exception;
+	}
 }

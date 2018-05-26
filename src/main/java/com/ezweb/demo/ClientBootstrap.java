@@ -1,16 +1,15 @@
 package com.ezweb.demo;
 
 import com.ezweb.demo.simple.Hello;
-import com.ezweb.engine.client.NettyClient;
-import com.ezweb.engine.log.Log4j2System;
-import com.ezweb.engine.rpc.RpcProtocol;
-import com.ezweb.engine.rpc.client.AsyncRpcClient;
-import com.ezweb.engine.rpc.client.RpcClient;
-import com.ezweb.engine.rpc.serialize.kryo.KryoDecoder;
-import com.ezweb.engine.rpc.serialize.kryo.KryoEncoder;
-import com.ezweb.engine.rpc.server.RpcProtocolImpl;
 import com.ezweb.demo.simple.HelloAsync;
 import com.ezweb.demo.simple.TimeResult;
+import com.ezweb.engine.client.NettyClient;
+import com.ezweb.engine.log.Log4j2System;
+import com.ezweb.engine.rpc.RpcProtocolCode;
+import com.ezweb.engine.rpc.client.AsyncRpcClient;
+import com.ezweb.engine.rpc.client.RpcClient;
+import com.ezweb.engine.rpc.serialize.kryo.KryoSerializationImpl;
+import com.ezweb.engine.rpc.server.RpcProtocolCodeImpl;
 import io.netty.util.concurrent.DefaultThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,9 +37,9 @@ public class ClientBootstrap {
 		NettyClient socket_client = new NettyClient();
 		socket_client.connect("localhost", 9000);
 
-		RpcProtocol protocol = new RpcProtocolImpl(new KryoDecoder(), new KryoEncoder());
+		RpcProtocolCode protocol = new RpcProtocolCodeImpl(new KryoSerializationImpl());
 
-	    {
+		{
 			RpcClient rpcClient = new RpcClient();
 
 			rpcClient.setProtocol(protocol);

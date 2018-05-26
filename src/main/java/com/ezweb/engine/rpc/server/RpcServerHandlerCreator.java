@@ -1,7 +1,7 @@
 package com.ezweb.engine.rpc.server;
 
 import com.ezweb.engine.rpc.RpcHandler;
-import com.ezweb.engine.rpc.RpcProtocol;
+import com.ezweb.engine.rpc.RpcProtocolCode;
 import com.ezweb.engine.server.ServerHandlerCreator;
 
 /**
@@ -15,11 +15,11 @@ public class RpcServerHandlerCreator implements ServerHandlerCreator<RpcServerHa
 		rpcProtocolProcessor = new RpcProtocolProcessorImpl();
 	}
 
-	public void addRpcHandler(Byte protoByte, RpcHandler rpcHandler) {
-		rpcProtocolProcessor.addRpcHandler(protoByte, rpcHandler);
+	public void addRpcHandler(RpcHandler rpcHandler) {
+		rpcProtocolProcessor.setRpcHandler(rpcHandler);
 	}
 
-	public void addRpcProtocol(Byte protoByte, RpcProtocol rpcProtocol) {
+	public void addRpcProtocol(Byte protoByte, RpcProtocolCode rpcProtocol) {
 		rpcProtocolProcessor.addRpcProtocol(protoByte, rpcProtocol);
 	}
 
