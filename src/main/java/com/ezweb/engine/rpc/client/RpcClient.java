@@ -2,6 +2,9 @@ package com.ezweb.engine.rpc.client;
 
 import com.ezweb.engine.CustTMessage;
 import com.ezweb.engine.client.NettyClient;
+import com.ezweb.engine.exception.TSendRequestException;
+import com.ezweb.engine.exception.TSerializeException;
+import com.ezweb.engine.exception.TTimeoutException;
 import com.ezweb.engine.rpc.RpcProtocolCode;
 import com.ezweb.engine.rpc.RpcRequest;
 import com.ezweb.engine.rpc.RpcResponse;
@@ -62,20 +65,27 @@ public class RpcClient {
 
 		@Override
 		public RpcResponse invoke(RpcRequest request) {
+			ByteBuffer reqBytes;
 			try {
-				ByteBuffer byteBuf = protocol.encodeRequest(request);
+				reqBytes = protocol.encodeRequest(request);
+			} catch (Exception e) {
+				throw new TSerializeException(e.getMessage());
+			}
+
+			try {
 				CustTMessage req_msg = CustTMessage.newRequestMessage();
 				req_msg.setCodeType(protocol.codeType());
-				req_msg.setBody(byteBuf);
-				req_msg.setLen(byteBuf.limit());
+				req_msg.setBody(reqBytes);
+				req_msg.setLen(reqBytes.limit());
 
 				CustTMessage res_msg = this.client.writeReq(req_msg, 10 * 1000);
 				RpcResponse response = protocol.decodeResponse(res_msg.getBody());
 				return response;
-			} catch (Exception e) {
-				RpcResponse response = new RpcResponse();
-				response.setException(e);
-				return response;
+				// 所有异常全部 throw.
+			} catch (TSendRequestException | TTimeoutException | TSerializeException e) {
+				throw e;
+			} catch (Throwable t) {
+				throw new TSendRequestException(t.getMessage());
 			}
 		}
 	}

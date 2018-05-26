@@ -2,6 +2,7 @@ package com.ezweb.engine.rpc.client;
 
 import com.ezweb.engine.CustTMessage;
 import com.ezweb.engine.exception.TSendRequestException;
+import com.ezweb.engine.exception.TSerializeException;
 import com.ezweb.engine.exception.TTimeoutException;
 import com.ezweb.engine.rpc.RpcRequest;
 import com.ezweb.engine.rpc.RpcResponse;
@@ -68,7 +69,7 @@ public class AsyncRpcClient extends RpcClient {
 			try {
 				reqBytes = getProtocol().encodeRequest(this.request);
 			} catch (Exception e) {
-				throw new TSendRequestException(e.getMessage());
+				throw new TSerializeException(e.getMessage());
 			}
 
 			CustTMessage req_msg = CustTMessage.newRequestMessage();
@@ -79,10 +80,11 @@ public class AsyncRpcClient extends RpcClient {
 			RpcResponse response = null;
 			try {
 				CustTMessage resp_msg = getNettyClient().writeReq(req_msg, 10 * 1000);
+
 				response = getProtocol().decodeResponse(resp_msg.getBody());
 				return response;
 				// 所有异常全部 throw.
-			} catch (TSendRequestException | TTimeoutException e) {
+			} catch (TSendRequestException | TTimeoutException | TSerializeException e) {
 				throw e;
 			} catch (Throwable t) {
 				throw new TSendRequestException(t.getMessage());
