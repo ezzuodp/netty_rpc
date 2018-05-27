@@ -57,7 +57,7 @@ public class NettyEncoder extends MessageToByteEncoder<CustTMessage> {
 		crc32.update(UnsignedUtils.uint32ToBytes(v), 0, 4);
 		crc32.update(UnsignedUtils.uint32ToBytes(seqId), 0, 4);
 		crc32.update(UnsignedUtils.uint32ToBytes(len), 0, 4);
-		/*for (int i = 0; i < len; ++i)*/
+		if (len > 0 && body != null)
 			crc32.update(body.array(), 0, len);
 
 		return crc32.getValue();

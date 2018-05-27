@@ -75,7 +75,7 @@ public class ClientBootstrap {
 								"sdfjaklsfasdfasdsf"
 						), System.currentTimeMillis());
 						logger.info("timeResult.num = {}, {}", i, timeResult.getTime());
-						TimeUnit.SECONDS.sleep(20L);
+						TimeUnit.SECONDS.sleep(31L);
 					} catch (Exception e) {
 						logger.info("同步调用，返回异常:", e);
 					}

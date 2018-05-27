@@ -134,8 +134,6 @@ public class NettyClient implements Closeable {
 	}
 
 	class NettyHeartbeatTask implements Runnable {
-		private final byte[] PING = ("PING").getBytes();
-
 		public NettyHeartbeatTask() {
 		}
 
@@ -143,7 +141,8 @@ public class NettyClient implements Closeable {
 		public void run() {
 			final CustTMessage request = CustTMessage.newRequestMessage();
 			request.setType(CustTType.HEARTBEAT);
-			request.setBody(ByteBuffer.wrap(PING));
+			request.setBody(null);
+			request.setLen(0);
 
 			channel.writeAndFlush(request).addListener((ChannelFutureListener) future -> {
 				if (future.isSuccess()) {
