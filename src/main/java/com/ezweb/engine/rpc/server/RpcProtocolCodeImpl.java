@@ -8,7 +8,12 @@ import com.ezweb.engine.rpc.serialize.Serialization;
 import com.google.protobuf.CodedInputStream;
 import com.google.protobuf.CodedOutputStream;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.ByteBuffer;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 /**
  * @author : zuodp
@@ -23,8 +28,9 @@ public class RpcProtocolCodeImpl implements RpcProtocolCode {
 
 	@Override
 	public RpcRequest decodeRequest(ByteBuffer msg) throws Exception {
+		GZIPInputStream in = new GZIPInputStream(new ByteBufferInputStream(msg));
 		// 解码
-		CodedInputStream bytes = CodedInputStream.newInstance(msg);
+		CodedInputStream bytes = CodedInputStream.newInstance(in);
 
 		RpcRequest rpcRequest = new RpcRequest();
 
@@ -34,10 +40,9 @@ public class RpcProtocolCodeImpl implements RpcProtocolCode {
 		int argLen = bytes.readInt32();
 
 		if (argLen > 0) {
-			Class<?>[] argTypes = ReflectUtils.desc2classArray(rpcRequest.getMethodDesc());
 			Object[] args = new Object[argLen];
 			for (int i = 0; i < argLen; ++i) {
-				args[i] = this.serialization.decodeNoType(bytes.readByteArray(), argTypes[i]);
+				args[i] = this.serialization.decode(bytes.readByteArray());
 			}
 			rpcRequest.setArguments(args);
 		}
@@ -48,8 +53,9 @@ public class RpcProtocolCodeImpl implements RpcProtocolCode {
 	public ByteBuffer encodeRequest(RpcRequest orig) throws Exception {
 		// 编码==>
 		ByteBuffer buf = ByteBuffer.allocate(1024);
+		GZIPOutputStream baos = new GZIPOutputStream(new ByteBufferOutputStream(buf));
 
-		CodedOutputStream bytes = CodedOutputStream.newInstance(buf);
+		CodedOutputStream bytes = CodedOutputStream.newInstance(baos);
 		bytes.writeStringNoTag(orig.getInterfaceName());
 		bytes.writeStringNoTag(orig.getMethodName());
 		bytes.writeStringNoTag(orig.getMethodDesc());
@@ -59,9 +65,11 @@ public class RpcProtocolCodeImpl implements RpcProtocolCode {
 		bytes.writeInt32NoTag(len);
 
 		for (int i = 0; i < len; ++i) {
-			bytes.writeByteArrayNoTag(serialization.encodeNoType(arguments[i]));
+			bytes.writeByteArrayNoTag(serialization.encode(arguments[i]));
 		}
 		bytes.flush();
+		baos.finish();
+		baos.flush();
 
 		buf.flip();
 		return buf;
@@ -69,15 +77,16 @@ public class RpcProtocolCodeImpl implements RpcProtocolCode {
 
 	@Override
 	public RpcResponse decodeResponse(ByteBuffer msg) throws Exception {
+		GZIPInputStream in = new GZIPInputStream(new ByteBufferInputStream(msg));
 		// 解码
-		CodedInputStream bytes = CodedInputStream.newInstance(msg);
+		CodedInputStream bytes = CodedInputStream.newInstance(in);
 		RpcResponse rpcResponse = new RpcResponse();
 
 		boolean haveException = bytes.readBool();
 		if (haveException) {
-			rpcResponse.setException(serialization.decodeNoType(bytes.readByteArray()));
+			rpcResponse.setException(serialization.decode(bytes.readByteArray()));
 		} else {
-			rpcResponse.setValue(serialization.decodeNoType(bytes.readByteArray()));
+			rpcResponse.setValue(serialization.decode(bytes.readByteArray()));
 		}
 		return rpcResponse;
 	}
@@ -87,7 +96,9 @@ public class RpcProtocolCodeImpl implements RpcProtocolCode {
 		// 编码==>
 		ByteBuffer buf = ByteBuffer.allocate(1024);
 
-		CodedOutputStream bytes = CodedOutputStream.newInstance(buf);
+		GZIPOutputStream baos = new GZIPOutputStream(new ByteBufferOutputStream(buf));
+
+		CodedOutputStream bytes = CodedOutputStream.newInstance(baos);
 		if (orig.getException() != null) {
 			bytes.writeBoolNoTag(true);
 			bytes.writeByteArrayNoTag(serialization.encode(orig.getException()));
@@ -97,7 +108,50 @@ public class RpcProtocolCodeImpl implements RpcProtocolCode {
 		}
 		bytes.flush();
 
+		baos.finish();
+		baos.flush();
+
 		buf.flip();
 		return buf;
+	}
+
+	private static class ByteBufferInputStream extends InputStream {
+		private ByteBuffer buf = null;
+
+		public ByteBufferInputStream(ByteBuffer buf) {
+			this.buf = buf;
+		}
+
+		@Override
+		public int read() throws IOException {
+			return buf.get() & 0xFF;
+		}
+
+		@Override
+		public int read(byte[] bytes, int offset, int length) throws IOException {
+			if (length == 0) return 0;
+			int count = Math.min(buf.remaining(), length);
+			if (count == 0) return -1;
+			buf.get(bytes, offset, count);
+			return count;
+		}
+
+		@Override
+		public int available() throws IOException {
+			return buf.remaining();
+		}
+	}
+
+	private static class ByteBufferOutputStream extends OutputStream {
+		private ByteBuffer buf = null;
+
+		public ByteBufferOutputStream(ByteBuffer buf) {
+			this.buf = buf;
+		}
+
+		@Override
+		public void write(int b) throws IOException {
+			buf.put((byte) b);
+		}
 	}
 }

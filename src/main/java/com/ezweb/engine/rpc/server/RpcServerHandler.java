@@ -24,12 +24,14 @@ public class RpcServerHandler extends AbsServerHandler {
 			// 这儿就可以另起 bizThread 进行 rpc 业务调用...
 			response = protocolProcessor.doProcess(request);
 
+			return response;
+
 		} else if (request.getType() == CustTType.ONEWAY) {
 
 			// 这儿就可以另起 bizThread 进行 rpc 业务调用...
 			protocolProcessor.doProcessOneWay(request);
 
 		}
-		return response;
+		throw new IllegalArgumentException("不支持的消息：" + request.toString());
 	}
 }

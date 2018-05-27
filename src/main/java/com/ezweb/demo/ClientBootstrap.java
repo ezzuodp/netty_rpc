@@ -10,6 +10,7 @@ import com.ezweb.engine.rpc.client.AsyncRpcClient;
 import com.ezweb.engine.rpc.client.RpcClient;
 import com.ezweb.engine.rpc.serialize.kryo.KryoSerializationImpl;
 import com.ezweb.engine.rpc.server.RpcProtocolCodeImpl;
+import com.google.common.collect.Lists;
 import io.netty.util.concurrent.DefaultThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,10 +48,34 @@ public class ClientBootstrap {
 
 				Hello helloProxy = rpcClient.createRef("/v2", Hello.class);
 
-				for (int i = 0; i < 1000; ++i) {
+				for (int i = 0; i < 10; ++i) {
 					try {
-						TimeResult timeResult = helloProxy.say("interface say", System.currentTimeMillis());
+						TimeResult timeResult = helloProxy.say(Lists.newArrayList(
+								"interface say",
+								"interface say",
+								"interface say",
+								"interface say",
+								"interface say",
+								"interface say",
+								"interface say",
+								"interface say",
+								"interface say",
+								"interface say",
+								"interface say",
+								"interface say",
+								"interface say",
+								"interface say",
+								"interface say",
+								"interface say",
+								"interface say",
+								"interface say",
+								"interface say",
+								"interface say",
+								"interface say",
+								"sdfjaklsfasdfasdsf"
+						), System.currentTimeMillis());
 						logger.info("timeResult.num = {}, {}", i, timeResult.getTime());
+						TimeUnit.SECONDS.sleep(20L);
 					} catch (Exception e) {
 						logger.info("同步调用，返回异常:", e);
 					}

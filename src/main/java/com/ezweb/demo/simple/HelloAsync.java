@@ -1,5 +1,6 @@
 package com.ezweb.demo.simple;
 
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -7,5 +8,5 @@ import java.util.concurrent.CompletableFuture;
  * @version : 1.10
  */
 public interface HelloAsync {
-	CompletableFuture<TimeResult> say(String name, long curTime);
+	CompletableFuture<TimeResult> say(List<String> name, long curTime);
 }

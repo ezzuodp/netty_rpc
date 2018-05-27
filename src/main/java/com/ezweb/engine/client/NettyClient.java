@@ -54,7 +54,7 @@ public class NettyClient implements Closeable {
 					public void initChannel(SocketChannel ch) throws Exception {
 						ch.pipeline().addLast(
 								//defaultEventExecutorGroup,
-								new LoggingHandler("com.ezweb.demo.client", LogLevel.DEBUG),
+								new LoggingHandler(NettyClient.class.getName(), LogLevel.DEBUG),
 								new NettyDecoder(),
 								new NettyEncoder(),
 								new NettyClientHandler()
@@ -134,7 +134,7 @@ public class NettyClient implements Closeable {
 	}
 
 	class NettyHeartbeatTask implements Runnable {
-		private byte[] PING = ("PING").getBytes();
+		private final byte[] PING = ("PING").getBytes();
 
 		public NettyHeartbeatTask() {
 		}
@@ -142,7 +142,7 @@ public class NettyClient implements Closeable {
 		@Override
 		public void run() {
 			final CustTMessage request = CustTMessage.newRequestMessage();
-			request.setType(CustTType.ONEWAY);
+			request.setType(CustTType.HEARTBEAT);
 			request.setBody(ByteBuffer.wrap(PING));
 
 			channel.writeAndFlush(request).addListener((ChannelFutureListener) future -> {

@@ -5,6 +5,8 @@ import com.ezweb.engine.exception.TBizException;
 import com.ezweb.engine.exception.TSerializeException;
 import com.ezweb.engine.rpc.*;
 import com.google.common.collect.Maps;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.nio.ByteBuffer;
 import java.util.concurrent.ConcurrentMap;
@@ -14,6 +16,8 @@ import java.util.concurrent.ConcurrentMap;
  * @version : 1.10
  */
 public class RpcProtocolProcessorImpl implements RpcProtocolProcessor {
+	private static final Logger LOG = LoggerFactory.getLogger(RpcProtocolProcessorImpl.class);
+
 	private ConcurrentMap<Byte, RpcProtocolCode> rpcProtocols = Maps.newConcurrentMap();
 	private RpcHandler rpcHandler = null;
 
@@ -21,8 +25,8 @@ public class RpcProtocolProcessorImpl implements RpcProtocolProcessor {
 	}
 
 	@Override
-	public void addRpcProtocol(Byte codeType, RpcProtocolCode rpcProtocol) {
-		rpcProtocols.put(codeType, rpcProtocol);
+	public void addRpcProtocol(RpcProtocolCode rpcProtocol) {
+		rpcProtocols.put(rpcProtocol.codeType(), rpcProtocol);
 	}
 
 	@Override
@@ -52,6 +56,7 @@ public class RpcProtocolProcessorImpl implements RpcProtocolProcessor {
 		try {
 			req = rpcCodeProtocol.decodeRequest(reqmsg.getBody());
 		} catch (Exception e) {
+			LOG.error("解码 {} 出错：", reqmsg, e);
 			res = new RpcResponse();
 			res.setException(new TSerializeException(e.getMessage()));
 		}
@@ -60,6 +65,7 @@ public class RpcProtocolProcessorImpl implements RpcProtocolProcessor {
 			// 执行req调用.
 			res = getRpcHandler().doRequest(req);
 		} catch (Exception e) {
+			LOG.error("执行业务调用 {} 出错：", reqmsg, e);
 			res = new RpcResponse();
 			res.setException(new TBizException(e.getMessage()));
 		}

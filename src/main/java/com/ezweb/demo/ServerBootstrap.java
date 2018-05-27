@@ -3,7 +3,6 @@ package com.ezweb.demo;
 import com.ezweb.demo.simple.Hello;
 import com.ezweb.demo.simple.HelloExtImpl;
 import com.ezweb.demo.simple.HelloImpl;
-import com.ezweb.engine.CustCodeType;
 import com.ezweb.engine.log.Log4j2System;
 import com.ezweb.engine.rpc.RpcProtocolCode;
 import com.ezweb.engine.rpc.serialize.kryo.KryoSerializationImpl;

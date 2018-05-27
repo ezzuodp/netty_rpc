@@ -105,11 +105,13 @@
             <groupId>org.openjdk.jol</groupId>
             <artifactId>jol-core</artifactId>
             <version>0.9</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.openjdk.jol</groupId>
             <artifactId>jol-cli</artifactId>
             <version>0.9</version>
+            <scope>test</scope>
         </dependency>
 
         <!-- diff-lcs算法 -->
@@ -117,6 +119,7 @@
             <groupId>com.googlecode.java-diff-utils</groupId>
             <artifactId>diffutils</artifactId>
             <version>1.3.0</version>
+            <scope>test</scope>
         </dependency>
 
         <!-- 测试代码  -->

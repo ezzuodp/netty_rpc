@@ -20,7 +20,7 @@ public class RpcServerHandlerCreator implements ServerHandlerCreator<RpcServerHa
 	}
 
 	public void addRpcProtocol(RpcProtocolCode rpcProtocol) {
-		rpcProtocolProcessor.addRpcProtocol(rpcProtocol.codeType(), rpcProtocol);
+		rpcProtocolProcessor.addRpcProtocol(rpcProtocol);
 	}
 
 	@Override

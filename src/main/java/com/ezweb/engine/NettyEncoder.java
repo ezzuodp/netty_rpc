@@ -46,13 +46,13 @@ public class NettyEncoder extends MessageToByteEncoder<CustTMessage> {
 			out.writeBytes(msg.getBody());
 	}
 
-	public static long calcCrc32(byte version, byte type, byte proto, int seqId, int len, ByteBuffer body) {
+	public static long calcCrc32(byte version, byte type, byte codeType, int seqId, int len, ByteBuffer body) {
 
 		PureJavaCrc32 crc32 = new PureJavaCrc32();
 		long v = CustTMessage.MAGIC;
 		v = v << 4 | version;
 		v = v << 4 | type;
-		v = v << 8 | proto;
+		v = v << 8 | codeType;
 
 		crc32.update(UnsignedUtils.uint32ToBytes(v), 0, 4);
 		crc32.update(UnsignedUtils.uint32ToBytes(seqId), 0, 4);

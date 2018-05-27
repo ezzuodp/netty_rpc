@@ -28,11 +28,11 @@ public class CustTMessage {
 	public final static int BODY_MAX_LEN = 8388607 - (HEAD_LEN + CRC32_LEN);
 
 	private short magic = (short) MAGIC;
-	private byte version = CustTVersion.VERSION_1;
-	private byte type = 0;                      // 请求类型：CALL | REPLY | EXCEPTION
-	private byte codeType = CustCodeType.NORMAL;// 协议编码类型
-	private int seqId = 0;                      // 请求顺序号
-	private int len = 0;                        // body.len
+	private byte version = CustTVersion.VERSION_1;// 数据格式版本号：
+	private byte type = CustTType.NONE;           // 请求类型：CALL | REPLY | EXCEPTION
+	private byte codeType = CustCodeType.NORMAL;  // 协议编码类型
+	private int seqId = 0;                        // 请求顺序号
+	private int len = 0;                          // body.len
 	private ByteBuffer body = null;
 
 	public static CustTMessage newRequestMessage() {
@@ -107,6 +107,6 @@ public class CustTMessage {
 
 	@Override
 	public String toString() {
-		return String.format("<CustTMessage ver:%s type:%s seqId:%d>", version, type, seqId);
+		return String.format("<CustTMessage ver:%s type:%s code:%d seqId:%d>", version, type, codeType, seqId);
 	}
 }

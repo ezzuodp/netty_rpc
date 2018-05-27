@@ -11,6 +11,8 @@ import io.netty.channel.epoll.EpollServerSocketChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.logging.LogLevel;
+import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.handler.timeout.IdleStateHandler;
@@ -31,7 +33,7 @@ public class NettyServer {
 	private EventLoopGroup bossGroup;
 	private EventLoopGroup workerGroup;
 	private DefaultEventExecutorGroup defaultEventExecutorGroup;
-	private ChannelFuture f;
+	private ChannelFuture bindFuture;
 	private ServerHandlerCreator<? extends AbsServerHandler> serverHandlerCreator = null;
 
 	public NettyServer(ServerHandlerCreator<? extends AbsServerHandler> serverHandlerCreator) {
@@ -45,7 +47,7 @@ public class NettyServer {
 
 		try {
 			// start server
-			f = b.bind(port).sync();
+			bindFuture = b.bind(port).sync();
 
 			// register shutown hook
 			Runtime.getRuntime().addShutdownHook(new ShutdownThread());
@@ -59,7 +61,7 @@ public class NettyServer {
 	 * blocking to wait for close.
 	 */
 	public void waitForClose() throws InterruptedException {
-		f.channel().closeFuture().sync();
+		bindFuture.channel().closeFuture().sync();
 	}
 
 	public void stop() {
@@ -75,12 +77,12 @@ public class NettyServer {
 	private ServerBootstrap configServer() {
 		if (RemotingUtil.isLinuxPlatform()) {
 			bossGroup = new EpollEventLoopGroup(1, new DefaultThreadFactory("NettyBossGroup"));
-			workerGroup = new EpollEventLoopGroup(3, new DefaultThreadFactory("NettyWorkerSelectorGroup"));
+			workerGroup = new EpollEventLoopGroup(3, new DefaultThreadFactory("NettyWorkerGroup"));
 		} else {
 			bossGroup = new NioEventLoopGroup(1, new DefaultThreadFactory("NettyBossGroup"));
-			workerGroup = new NioEventLoopGroup(3, new DefaultThreadFactory("NettyWorkerSelectorGroup"));
+			workerGroup = new NioEventLoopGroup(3, new DefaultThreadFactory("NettyWorkerGroup"));
 		}
-		defaultEventExecutorGroup = new DefaultEventExecutorGroup(8, new DefaultThreadFactory("NettyExecGroup"));
+		defaultEventExecutorGroup = new DefaultEventExecutorGroup(8, new DefaultThreadFactory("NettyBizGroup"));
 
 		ServerBootstrap b = new ServerBootstrap();
 		b.group(bossGroup, workerGroup)
@@ -98,10 +100,10 @@ public class NettyServer {
 			public void initChannel(SocketChannel ch) throws Exception {
 				ch.pipeline().addLast(
 						defaultEventExecutorGroup,
-						// new LoggingHandler("com.ezweb.SERVLER", LogLevel.DEBUG),
+						new LoggingHandler(NettyServer.class.getName(), LogLevel.DEBUG),
 						new NettyDecoder(),
 						new NettyEncoder(),
-						new IdleStateHandler(0, 0, 120, TimeUnit.SECONDS),
+						new IdleStateHandler(0, 0, 60, TimeUnit.SECONDS),
 						new NettyConnectManageHandler(),
 						serverHandlerCreator.create()
 				);

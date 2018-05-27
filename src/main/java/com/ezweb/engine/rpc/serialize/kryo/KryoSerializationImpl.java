@@ -4,8 +4,6 @@ import com.esotericsoftware.kryo.io.ByteBufferInput;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import com.ezweb.engine.rpc.serialize.Serialization;
-import org.xerial.snappy.SnappyInputStream;
-import org.xerial.snappy.SnappyOutputStream;
 
 import java.io.ByteArrayOutputStream;
 
@@ -18,24 +16,22 @@ public class KryoSerializationImpl implements Serialization {
 	private final static byte[] EMPTY = new byte[]{'0'};
 
 	@Override
-	public <T> T decodeNoType(byte[] bytes) throws Exception {
+	public <T> T decode(byte[] bytes) {
 		if (bytes == null || bytes.length == 0) return null;
 		if (bytes.length == 1 && bytes[0] == EMPTY[0]) return null;
 
-		SnappyInputStream inputStream = new SnappyInputStream(new ByteBufferInput(bytes));
-		Input input = new Input(inputStream);
+		Input input = new ByteBufferInput(bytes);
 		return (T) KryoFactory.getDefaultFactory().getKryo().readClassAndObject(input);
 	}
 
 	@Override
-	public byte[] encode(Object object) throws Exception {
+	public byte[] encode(Object object) {
 		if (object == null) return EMPTY;
 
 		ByteArrayOutputStream out = new ByteArrayOutputStream(1024);
-		Output output = new Output(1024, MAX_SIZE);
 
-		SnappyOutputStream outputStream = new SnappyOutputStream(out);
-		output.setOutputStream(outputStream);
+		Output output = new Output(1024, MAX_SIZE);
+		output.setOutputStream(out);
 
 		KryoFactory.getDefaultFactory().getKryo().writeClassAndObject(output, object);
 		output.flush();
@@ -44,14 +40,13 @@ public class KryoSerializationImpl implements Serialization {
 	}
 
 	@Override
-	public <T> byte[] encodeNoType(T object) throws Exception {
+	public <T> byte[] encodeNoType(T object) {
 		if (object == null) return EMPTY;
 
 		ByteArrayOutputStream out = new ByteArrayOutputStream(1024);
 		Output output = new Output(1024, MAX_SIZE);
 
-		SnappyOutputStream outputStream = new SnappyOutputStream(out);
-		output.setOutputStream(outputStream);
+		output.setOutputStream(out);
 
 		KryoFactory.getDefaultFactory().getKryo().writeObject(output, object);
 		output.flush();
@@ -60,12 +55,11 @@ public class KryoSerializationImpl implements Serialization {
 	}
 
 	@Override
-	public <T> T decodeNoType(byte[] bytes, Class<T> tType) throws Exception {
+	public <T> T decodeNoType(byte[] bytes, Class<T> tType) {
 		if (bytes == null || bytes.length == 0) return null;
 		if (bytes.length == 1 && bytes[0] == EMPTY[0]) return null;
 
-		SnappyInputStream inputStream = new SnappyInputStream(new ByteBufferInput(bytes));
-		Input input = new Input(inputStream);
+		Input input = new ByteBufferInput(bytes);
 		return (T) KryoFactory.getDefaultFactory().getKryo().readObject(input, tType);
 	}
 }
