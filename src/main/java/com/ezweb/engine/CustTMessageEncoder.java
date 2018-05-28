@@ -12,7 +12,7 @@ import java.nio.ByteBuffer;
  * @author : zuodp
  * @version : 1.10
  */
-public class NettyEncoder extends MessageToByteEncoder<CustTMessage> {
+public class CustTMessageEncoder extends MessageToByteEncoder<CustTMessage> {
 	public static final int FRAME_LEN = 4;
 
 	/**

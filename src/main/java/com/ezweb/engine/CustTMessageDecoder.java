@@ -11,10 +11,10 @@ import java.nio.ByteBuffer;
  * @author : zuodp
  * @version : 1.10
  */
-public class NettyDecoder extends LengthFieldBasedFrameDecoder {
+public class CustTMessageDecoder extends LengthFieldBasedFrameDecoder {
 
-	public NettyDecoder() {
-		super(Integer.MAX_VALUE, 0, NettyEncoder.FRAME_LEN, 0, NettyEncoder.FRAME_LEN);
+	public CustTMessageDecoder() {
+		super(Integer.MAX_VALUE, 0, CustTMessageEncoder.FRAME_LEN, 0, CustTMessageEncoder.FRAME_LEN);
 	}
 
 	@Override
@@ -50,7 +50,7 @@ public class NettyDecoder extends LengthFieldBasedFrameDecoder {
 				frame.readBytes(body);
 				body.flip();      // [0, position]
 
-				long crc32_v = NettyEncoder.calcCrc32(ver, type, protoType, seqId, len, body);
+				long crc32_v = CustTMessageEncoder.calcCrc32(ver, type, protoType, seqId, len, body);
 				if (crc32 != crc32_v) {
 					frame.discardReadBytes();
 					throw new Exception("crc32 失败");

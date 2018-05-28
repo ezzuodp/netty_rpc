@@ -1,7 +1,7 @@
 package com.ezweb.engine.server;
 
-import com.ezweb.engine.NettyDecoder;
-import com.ezweb.engine.NettyEncoder;
+import com.ezweb.engine.CustTMessageDecoder;
+import com.ezweb.engine.CustTMessageEncoder;
 import com.ezweb.engine.util.RemotingUtil;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
@@ -101,8 +101,8 @@ public class NettyServer {
 				ch.pipeline().addLast(
 						defaultEventExecutorGroup,
 						new LoggingHandler(NettyServer.class.getName(), LogLevel.DEBUG),
-						new NettyDecoder(),
-						new NettyEncoder(),
+						new CustTMessageDecoder(),
+						new CustTMessageEncoder(),
 						new IdleStateHandler(0, 0, 60, TimeUnit.SECONDS),
 						new NettyConnectManageHandler(),
 						serverHandlerCreator.create()

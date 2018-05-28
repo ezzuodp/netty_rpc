@@ -2,8 +2,8 @@ package com.ezweb.engine.client;
 
 import com.ezweb.engine.CustTMessage;
 import com.ezweb.engine.CustTType;
-import com.ezweb.engine.NettyDecoder;
-import com.ezweb.engine.NettyEncoder;
+import com.ezweb.engine.CustTMessageDecoder;
+import com.ezweb.engine.CustTMessageEncoder;
 import com.ezweb.engine.exception.TSendRequestException;
 import com.ezweb.engine.exception.TTimeoutException;
 import io.netty.bootstrap.Bootstrap;
@@ -18,7 +18,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Closeable;
-import java.nio.ByteBuffer;
 import java.util.concurrent.*;
 
 /**
@@ -55,8 +54,8 @@ public class NettyClient implements Closeable {
 						ch.pipeline().addLast(
 								//defaultEventExecutorGroup,
 								new LoggingHandler(NettyClient.class.getName(), LogLevel.DEBUG),
-								new NettyDecoder(),
-								new NettyEncoder(),
+								new CustTMessageDecoder(),
+								new CustTMessageEncoder(),
 								new NettyClientHandler()
 						);
 					}
@@ -146,6 +145,7 @@ public class NettyClient implements Closeable {
 
 			channel.writeAndFlush(request).addListener((ChannelFutureListener) future -> {
 				if (future.isSuccess()) {
+					logger.debug("send Heartbeat to channel <{}> success.\nREQ:{}", future.channel(), request);
 					return;
 				}
 				logger.warn("send Heartbeat to channel <{}> failed.\nREQ:{}", future.channel(), request);
