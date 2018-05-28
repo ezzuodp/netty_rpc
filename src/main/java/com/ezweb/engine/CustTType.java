@@ -11,7 +11,7 @@ public interface CustTType {
 
 	byte CALL = 1;
 	byte REPLY = 2;
-	byte ONEWAY = 3;      // 请求没有近回值.
+	byte ONEWAY = 3;      // 请求后不需要等待近回值.
 
 	byte HEARTBEAT = 0xf; // 心跳最大值
 }

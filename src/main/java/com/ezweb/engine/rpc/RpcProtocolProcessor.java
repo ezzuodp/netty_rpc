@@ -12,6 +12,4 @@ public interface RpcProtocolProcessor {
 	void setRpcHandler(RpcHandler rpcHandler);
 
 	CustTMessage doProcess(CustTMessage msg) throws Exception;
-
-	void doProcessOneWay(CustTMessage msg) throws Exception;
 }
