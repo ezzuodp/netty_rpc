@@ -12,6 +12,7 @@ import com.ezweb.engine.util.UnsignedUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.util.List;
 import java.util.Random;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -26,8 +27,8 @@ public class TestBytes {
 	@Test
 	public void testAsm() throws Exception {
 		Class<Hello> c = Hello.class;
-		String desc = ReflectUtils.getRpcDesc(c.getMethod("say", String.class, Long.TYPE));
-		Assert.assertEquals(desc, "(Ljava/lang/String;J)");
+		String desc = ReflectUtils.getRpcDesc(c.getMethod("say", List.class, Long.TYPE));
+		Assert.assertEquals(desc, "(Ljava/util/List;J)");
 
 		RpcResponse res = new RpcResponse();
 		res.setException(new TBizException("xzzzzzzzzzz"));
