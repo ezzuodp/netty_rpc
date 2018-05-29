@@ -1,10 +1,11 @@
 package com.ezweb.engine.client;
 
 import com.ezweb.engine.CustTMessage;
-import com.ezweb.engine.CustTType;
 import com.ezweb.engine.CustTMessageDecoder;
 import com.ezweb.engine.CustTMessageEncoder;
+import com.ezweb.engine.CustTType;
 import com.ezweb.engine.exception.TSendRequestException;
+import com.ezweb.engine.exception.TSerializeException;
 import com.ezweb.engine.exception.TTimeoutException;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
@@ -112,24 +113,18 @@ public class NettyClient implements Closeable {
 	}
 
 	class NettyClientHandler extends SimpleChannelInboundHandler<CustTMessage> {
-
 		@Override
-		protected void channelRead0(ChannelHandlerContext ctx, CustTMessage msg) throws Exception {
+		protected void channelRead0(ChannelHandlerContext ctx, CustTMessage msg) {
 			int id = msg.getSeqId();
-			ResponseFuture responseFuture = responseTable.get(id);
+			ResponseFuture responseFuture = responseTable.remove(id);
 			if (responseFuture != null) {
 				logger.debug("receive request id:{} response data.", id);
-
-				// TODO:可以检查返回的msg.type == REPLY
-
-				responseFuture.setResponse(msg);
-				responseFuture.release();           // 发出通知,可以读取response了.
-
-				responseTable.remove(id);
+				responseFuture.set(msg);
 			} else {
 				logger.warn("receive request id:{} response, but it's not in.", id);
 			}
 		}
+
 	}
 
 	class NettyHeartbeatTask implements Runnable {
@@ -153,101 +148,39 @@ public class NettyClient implements Closeable {
 		}
 	}
 
-	public CustTMessage writeReq(final CustTMessage request, final int timeout) throws InterruptedException, TTimeoutException, TSendRequestException {
-		ResponseFuture responseFuture = writeReqImpl(request);
-		CustTMessage response = responseFuture.get(timeout, TimeUnit.MILLISECONDS);
-		if (null == response) {
-			if (responseFuture.isDone()) {
-				throw new TTimeoutException(
-						String.format("wait response on the channel <%s> timeout %d(milliseconds).", channel, timeout)
-				);
-			} else {
-				throw new TSendRequestException(
-						String.format("send request to the channel <%s> failed.", channel)
-				);
-			}
-		} else {
-			logger.debug("send a request to channel <{}> success.\nREQ:{}\nRES:{}", channel, request, response);
-		}
-		return response;
-	}
+	public CustTMessage writeReq(final CustTMessage request, final int timeout) throws TTimeoutException, TSendRequestException, TSerializeException {
 
-	//public CompletableFuture<CustTMessage> writeReqAsync(final CustTMessage request, final int timeout) {
-	// guava 代码，使用线程池.
-		/*ResponseFuture responseFuture = writeReqImpl(request);
-		return Futures.transformAsync(
-				Futures.immediateFuture(responseFuture),
-				new AsyncFunction<ResponseFuture, CustTMessage>() {
-					@Override
-					public ListenableFuture<CustTMessage> apply(ResponseFuture responseFuture) throws Exception {
-						CustTMessage response = responseFuture.waitResponse(timeout, TimeUnit.MILLISECONDS);
-						if (null == response) {
-							if (responseFuture.isOk()) {
-								throw new TTimeoutException(
-										String.format("wait response on the channel <%s> timeout %d(milliseconds).", channel, timeout)
-								);
-							} else {
-								throw new TSendRequestException(
-										String.format("send request to the channel <%s> failed.", channel)
-								);
-							}
-						} else {
-							logger.debug("send a request to channel <{}> success.\nREQ:{}\nRES:{}", channel, request, response);
-						}
-						return Futures.immediateFuture(response);
-					}
-				},
-				asyc_thread_pool);*/
-	// java8
-		/*
-		CompletableFuture<CustTMessage> future = CompletableFuture.supplyAsync(() -> {
+		try {
 			ResponseFuture responseFuture = writeReqImpl(request);
+			CustTMessage response = responseFuture.get(timeout, TimeUnit.MILLISECONDS);
 
-			CustTMessage response = null;
-			try {
-				response = responseFuture.waitResponse(timeout, TimeUnit.MILLISECONDS);
-			} catch (InterruptedException e) {
-				// ignore e;
-			}
-			if (null == response) {
-				if (responseFuture.isOk()) {
-					throw new TTimeoutException(
-							String.format("wait response on the channel <%s> timeout %d(milliseconds).", channel, timeout)
-					);
-				} else {
-					throw new TSendRequestException(
-							String.format("send request to the channel <%s> failed.", channel)
-					);
-				}
-			} else {
-				logger.debug("send a request to channel <{}> success.\nREQ:{}\nRES:{}", channel, request, response);
-				return response;
-			}
-		});
-		return future;
-		*/
-	//}
+			logger.debug("send a request to channel <{}> success.\nREQ:{}\nRES:{}", channel, request, response);
+
+			return response;
+		} catch (TimeoutException e) {
+			throw new TTimeoutException(String.format("wait response on the channel <%s> timeout %d(milliseconds).", channel, timeout), e);
+		} catch (InterruptedException | ExecutionException e) {
+			throw new TSendRequestException(String.format("send request to the channel <%s> failed", channel), e);
+		}
+	}
 
 	private ResponseFuture writeReqImpl(CustTMessage request) {
 		if (!channel.isActive()) throw new TSendRequestException("channel is closed.");
 
 		final ResponseFuture responseFuture = new ResponseFuture(request.getSeqId());
 		responseTable.put(responseFuture.getId(), responseFuture);
+
 		channel.writeAndFlush(request).addListener(new ChannelFutureListener() {
 			@Override
 			public void operationComplete(ChannelFuture nettyFuture) throws Exception {
 				if (nettyFuture.isSuccess()) {
-					responseFuture.setIsOk(true);
-					return;
+					logger.debug("write a request to channel <{}> success.\nREQ:{}", nettyFuture.channel(), request);
 				} else {
-					responseFuture.setIsOk(false);
+					logger.error("write a request to channel <{}> failed.\nREQ:{}", nettyFuture.channel(), request);
+
+					responseTable.remove(responseFuture.getId());
+					responseFuture.cancel(true);
 				}
-
-				// 写入失败了,就从缓存中移掉这个请求
-				responseTable.remove(responseFuture.getId(), responseFuture);
-
-				responseFuture.setResponse(null);
-				logger.warn("send a request to channel <{}> failed.\nREQ:{}", nettyFuture.channel(), request);
 			}
 		});
 		return responseFuture;

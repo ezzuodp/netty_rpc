@@ -52,30 +52,10 @@ public class ClientBootstrap {
 					try {
 						TimeResult timeResult = helloProxy.say(Lists.newArrayList(
 								"interface say",
-								"interface say",
-								"interface say",
-								"interface say",
-								"interface say",
-								"interface say",
-								"interface say",
-								"interface say",
-								"interface say",
-								"interface say",
-								"interface say",
-								"interface say",
-								"interface say",
-								"interface say",
-								"interface say",
-								"interface say",
-								"interface say",
-								"interface say",
-								"interface say",
-								"interface say",
-								"interface say",
 								"sdfjaklsfasdfasdsf"
 						), System.currentTimeMillis());
 						logger.info("timeResult.num = {}, {}", i, timeResult.getTime());
-						TimeUnit.SECONDS.sleep(31L);
+						TimeUnit.SECONDS.sleep(1L);
 					} catch (Exception e) {
 						logger.info("同步调用，返回异常:", e);
 					}
