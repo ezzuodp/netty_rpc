@@ -13,20 +13,14 @@ import java.util.concurrent.locks.LockSupport;
  * @version 1.0.0
  * @date 2018/6/8
  */
-public class ResponseFutureV2 implements Future<CustTMessage> {
-	private final static AtomicReferenceFieldUpdater<ResponseFutureV2, FutureResult> innerResultOffset;
-	private final static AtomicReferenceFieldUpdater<ResponseFutureV2, WaitNode> waitersOffset;
+class ResponseFutureV2 implements Future<CustTMessage> {
+	private final static AtomicReferenceFieldUpdater<ResponseFutureV2, FutureResult> INNER_RESULT_UPDATER =
+			AtomicReferenceFieldUpdater.newUpdater(ResponseFutureV2.class, FutureResult.class, "innerResult");
 
-	static {
-		try {
-			innerResultOffset = AtomicReferenceFieldUpdater.newUpdater(ResponseFutureV2.class, FutureResult.class, "innerResult");
-			waitersOffset = AtomicReferenceFieldUpdater.newUpdater(ResponseFutureV2.class, WaitNode.class, "waiters");
-		} catch (Exception ex) {
-			throw new Error(ex);
-		}
-	}
+	private final static AtomicReferenceFieldUpdater<ResponseFutureV2, WaitNode> WAITERS_UPDATER =
+			AtomicReferenceFieldUpdater.newUpdater(ResponseFutureV2.class, WaitNode.class, "waiters");
 
-	static final class WaitNode {
+	static private final class WaitNode {
 		volatile Thread thread;
 		volatile WaitNode next;
 
@@ -40,7 +34,7 @@ public class ResponseFutureV2 implements Future<CustTMessage> {
 
 	private final int seqId;
 
-	public ResponseFutureV2(int seqId) {
+	ResponseFutureV2(int seqId) {
 		this.seqId = seqId;
 	}
 
@@ -49,7 +43,7 @@ public class ResponseFutureV2 implements Future<CustTMessage> {
 	}
 
 	public boolean set(CustTMessage msg) {
-		boolean change = innerResultOffset.compareAndSet(this, null, new DoneFutureResult<>(msg));
+		boolean change = INNER_RESULT_UPDATER.compareAndSet(this, null, new DoneFutureResult<>(msg));
 		if (!change) {
 			return false;
 		}
@@ -59,7 +53,7 @@ public class ResponseFutureV2 implements Future<CustTMessage> {
 
 	@Override
 	public boolean cancel(boolean mayInterruptIfRunning) {
-		boolean change = innerResultOffset.compareAndSet(this, null, new CancelFutureResult<CustTMessage>(mayInterruptIfRunning));
+		boolean change = INNER_RESULT_UPDATER.compareAndSet(this, null, new CancelFutureResult<CustTMessage>(mayInterruptIfRunning));
 		if (!change) {
 			return false;
 		}
@@ -76,14 +70,14 @@ public class ResponseFutureV2 implements Future<CustTMessage> {
 	@Override
 	public boolean isCancelled() {
 		//noinspection unchecked
-		FutureResult<CustTMessage> obj = innerResultOffset.get(this);
+		FutureResult<CustTMessage> obj = INNER_RESULT_UPDATER.get(this);
 		return (obj != null && obj instanceof CancelFutureResult);
 	}
 
 	@Override
 	public boolean isDone() {
 		//noinspection unchecked
-		FutureResult<CustTMessage> obj = innerResultOffset.get(this);
+		FutureResult<CustTMessage> obj = INNER_RESULT_UPDATER.get(this);
 		return obj != null && obj instanceof DoneFutureResult;
 	}
 
@@ -93,7 +87,7 @@ public class ResponseFutureV2 implements Future<CustTMessage> {
 			throw new InterruptedException();
 		}
 		//noinspection unchecked
-		FutureResult<CustTMessage> obj = innerResultOffset.get(this);
+		FutureResult<CustTMessage> obj = INNER_RESULT_UPDATER.get(this);
 		if (obj != null) {
 			return getDoneValue(obj);
 		}
@@ -106,7 +100,7 @@ public class ResponseFutureV2 implements Future<CustTMessage> {
 			throw new InterruptedException();
 		}
 		//noinspection unchecked
-		FutureResult<CustTMessage> obj = innerResultOffset.get(this);
+		FutureResult<CustTMessage> obj = INNER_RESULT_UPDATER.get(this);
 		if (obj != null) {
 			return getDoneValue(obj);
 		}
@@ -117,13 +111,13 @@ public class ResponseFutureV2 implements Future<CustTMessage> {
 		WaitNode newNode = new WaitNode();
 		boolean queued = false;
 		do {
-			queued = waitersOffset.compareAndSet(this, newNode.next = waiters, newNode);
+			queued = WAITERS_UPDATER.compareAndSet(this, newNode.next = waiters, newNode);
 		} while (!queued);
 
 		LockSupport.park(this);
 
 		//noinspection unchecked
-		return getDoneValue(innerResultOffset.get(this));
+		return getDoneValue(INNER_RESULT_UPDATER.get(this));
 	}
 
 	private CustTMessage addAndWaitDone(long timeout) throws ExecutionException, TimeoutException {
@@ -132,16 +126,15 @@ public class ResponseFutureV2 implements Future<CustTMessage> {
 		WaitNode newNode = new WaitNode();
 		boolean queued = false;
 		do {
-			queued = waitersOffset.compareAndSet(this, newNode.next = waiters, newNode);
+			queued = WAITERS_UPDATER.compareAndSet(this, newNode.next = WAITERS_UPDATER.get(this), newNode);
 		} while (!queued);
-
 
 		long remainingNanos = endNanos - System.nanoTime();
 
 		if (remainingNanos >= 1000L) {
 			LockSupport.parkNanos(this, remainingNanos);
 			//noinspection unchecked
-			FutureResult<CustTMessage> obj = innerResultOffset.get(this);
+			FutureResult<CustTMessage> obj = INNER_RESULT_UPDATER.get(this);
 			if (obj != null) {
 				return this.getDoneValue(obj);
 			}
@@ -149,7 +142,7 @@ public class ResponseFutureV2 implements Future<CustTMessage> {
 			// 优化 < 1000L
 			while (remainingNanos > 0L) {
 				//noinspection unchecked
-				FutureResult<CustTMessage> obj = innerResultOffset.get(this);
+				FutureResult<CustTMessage> obj = INNER_RESULT_UPDATER.get(this);
 				if (obj != null) {
 					return this.getDoneValue(obj);
 				}
@@ -178,8 +171,8 @@ public class ResponseFutureV2 implements Future<CustTMessage> {
 
 	private void finishCompletion() {
 		// assert state > COMPLETING;
-		for (WaitNode q; (q = waitersOffset.get(this)) != null; ) {
-			if (waitersOffset.compareAndSet(this, q, null)) {
+		for (WaitNode q; (q = WAITERS_UPDATER.get(this)) != null; ) {
+			if (WAITERS_UPDATER.compareAndSet(this, q, null)) {
 				for (; ; ) {
 					Thread t = q.thread;
 					if (t != null) {
