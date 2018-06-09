@@ -46,22 +46,21 @@ public class ClientBootstrap {
 				rpcClient.setProtocol(protocol);
 				rpcClient.setNettyClient(socket_client);
 
-				Hello helloProxy = rpcClient.createRef("/v2", Hello.class);
+				Hello helloProxy = rpcClient.createRef("/v1", Hello.class);
 
-				for (int i = 0; i < 10; ++i) {
+				for (int i = 0; i < 128; ++i) {
 					try {
 						TimeResult timeResult = helloProxy.say(Lists.newArrayList(
 								"interface say",
 								"sdfjaklsfasdfasdsf"
 						), System.currentTimeMillis());
 						logger.info("timeResult.num = {}, {}", i, timeResult.getTime());
-						TimeUnit.SECONDS.sleep(1L);
 					} catch (Exception e) {
 						logger.info("同步调用，返回异常:", e);
 					}
 				}
 			}
-			/*
+
 			{
 				AsyncRpcClient rpcClient = new AsyncRpcClient(8);
 
@@ -73,7 +72,10 @@ public class ClientBootstrap {
 				int j = 0;
 				for (int i = 0; i < 128; ++i) {
 
-					CompletableFuture<TimeResult> timeResultFuture = helloProxy.say("interface say", System.currentTimeMillis());
+					CompletableFuture<TimeResult> timeResultFuture = helloProxy.say(Lists.newArrayList(
+							"interface say",
+							"sdfjaklsfasdfasdsf"
+					), System.currentTimeMillis());
 					++j;
 					class ConsumerImpl implements BiConsumer<TimeResult, Throwable> {
 						private final int _num;
@@ -98,7 +100,7 @@ public class ClientBootstrap {
 				}
 			}
 			TimeUnit.SECONDS.sleep(2L);
-			*/
+
 		} finally {
 			socket_client.close();
 		}

@@ -35,7 +35,7 @@ public class NettyClient implements Closeable {
 
 	private Channel channel = null;
 	// 缓存所有对外请求
-	protected final ConcurrentHashMap<Integer, ResponseFuture> responseTable = new ConcurrentHashMap<>(256);
+	protected final ConcurrentHashMap<Integer, Future<CustTMessage>> responseTable = new ConcurrentHashMap<>(256);
 	// 心跳定时器
 	private ScheduledExecutorService heatbeatExe;
 
@@ -116,10 +116,10 @@ public class NettyClient implements Closeable {
 		@Override
 		protected void channelRead0(ChannelHandlerContext ctx, CustTMessage msg) {
 			int id = msg.getSeqId();
-			ResponseFuture responseFuture = responseTable.remove(id);
+			Future<CustTMessage> responseFuture = responseTable.remove(id);
 			if (responseFuture != null) {
 				logger.debug("receive request id:{} response data.", id);
-				responseFuture.set(msg);
+				((ResponseFutureV2) responseFuture).set(msg);
 			} else {
 				logger.warn("receive request id:{} response, but it's not in.", id);
 			}
@@ -151,7 +151,7 @@ public class NettyClient implements Closeable {
 	public CustTMessage writeReq(final CustTMessage request, final int timeout) throws TTimeoutException, TSendRequestException, TSerializeException {
 
 		try {
-			ResponseFuture responseFuture = writeReqImpl(request);
+			Future<CustTMessage> responseFuture = writeReqImpl(request);
 			CustTMessage response = responseFuture.get(timeout, TimeUnit.MILLISECONDS);
 
 			logger.debug("send a request to channel <{}> success.\nREQ:{}\nRES:{}", channel, request, response);
@@ -164,11 +164,11 @@ public class NettyClient implements Closeable {
 		}
 	}
 
-	private ResponseFuture writeReqImpl(CustTMessage request) {
+	private Future<CustTMessage> writeReqImpl(CustTMessage request) {
 		if (!channel.isActive()) throw new TSendRequestException("channel is closed.");
 
-		final ResponseFuture responseFuture = new ResponseFuture(request.getSeqId());
-		responseTable.put(responseFuture.getId(), responseFuture);
+		final ResponseFutureV2 responseFuture = new ResponseFutureV2(request.getSeqId());
+		responseTable.put(request.getSeqId(), responseFuture);
 
 		channel.writeAndFlush(request).addListener(new ChannelFutureListener() {
 			@Override
@@ -178,8 +178,10 @@ public class NettyClient implements Closeable {
 				} else {
 					logger.error("write a request to channel <{}> failed.\nREQ:{}", nettyFuture.channel(), request);
 
-					responseTable.remove(responseFuture.getId());
-					responseFuture.cancel(true);
+					boolean cancel = responseFuture.cancel(true);
+					if (cancel) {
+						responseTable.remove(responseFuture.getSeqId());
+					}
 				}
 			}
 		});

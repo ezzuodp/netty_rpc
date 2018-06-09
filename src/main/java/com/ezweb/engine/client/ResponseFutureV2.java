@@ -7,16 +7,15 @@ import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 import java.util.concurrent.locks.LockSupport;
 
 /**
- * <一句话说明功能>
- * <功能详细描述>
+ * 使用LockSupport实现的Future.
  *
  * @author zuodengpeng
  * @version 1.0.0
  * @date 2018/6/8
  */
 public class ResponseFutureV2 implements Future<CustTMessage> {
-	private static AtomicReferenceFieldUpdater<ResponseFutureV2, FutureResult> innerResultOffset = null;
-	private static AtomicReferenceFieldUpdater<ResponseFutureV2, WaitNode> waitersOffset = null;
+	private final static AtomicReferenceFieldUpdater<ResponseFutureV2, FutureResult> innerResultOffset;
+	private final static AtomicReferenceFieldUpdater<ResponseFutureV2, WaitNode> waitersOffset;
 
 	static {
 		try {
@@ -39,61 +38,145 @@ public class ResponseFutureV2 implements Future<CustTMessage> {
 	private volatile FutureResult<CustTMessage> innerResult = null;
 	private volatile WaitNode waiters;
 
+	private final int seqId;
+
+	public ResponseFutureV2(int seqId) {
+		this.seqId = seqId;
+	}
+
+	public int getSeqId() {
+		return seqId;
+	}
+
+	public boolean set(CustTMessage msg) {
+		boolean change = innerResultOffset.compareAndSet(this, null, new DoneFutureResult<>(msg));
+		if (!change) {
+			return false;
+		}
+		this.finishCompletion();
+		return true;
+	}
+
 	@Override
 	public boolean cancel(boolean mayInterruptIfRunning) {
-		boolean v = innerResultOffset.compareAndSet(this, null, new CancelFutureResult<CustTMessage>(mayInterruptIfRunning));
+		boolean change = innerResultOffset.compareAndSet(this, null, new CancelFutureResult<CustTMessage>(mayInterruptIfRunning));
+		if (!change) {
+			return false;
+		}
 		try {
 			if (mayInterruptIfRunning) {
-				// TODO:想办法支持中断
+				// TODO:想办法支持中断执行线程
 			}
 		} finally {
 			finishCompletion();
 		}
-		return v;
+		return true;
 	}
 
 	@Override
 	public boolean isCancelled() {
-		return innerResult != null && innerResult instanceof CancelFutureResult;
+		//noinspection unchecked
+		FutureResult<CustTMessage> obj = innerResultOffset.get(this);
+		return (obj != null && obj instanceof CancelFutureResult);
 	}
 
 	@Override
 	public boolean isDone() {
-		return innerResult != null && innerResult instanceof DoneFutureResult;
+		//noinspection unchecked
+		FutureResult<CustTMessage> obj = innerResultOffset.get(this);
+		return obj != null && obj instanceof DoneFutureResult;
 	}
 
 	@Override
-	public CustTMessage get() {
-		if (waiters == null)
-			waiters = new WaitNode();
-		else {
-			WaitNode n = new WaitNode();
-			n.next = this.waiters;
-			this.waiters = n;
+	public CustTMessage get() throws InterruptedException, ExecutionException {
+		if (Thread.interrupted()) {
+			throw new InterruptedException();
 		}
-		LockSupport.park();
-		return isDone() ? ((DoneFutureResult<CustTMessage>) innerResult).getResult() : null;
+		//noinspection unchecked
+		FutureResult<CustTMessage> obj = innerResultOffset.get(this);
+		if (obj != null) {
+			return getDoneValue(obj);
+		}
+		return addAndWaitDone();
 	}
 
 	@Override
-	public CustTMessage get(long timeout, TimeUnit unit) {
-		if (waiters == null)
-			waiters = new WaitNode();
-		else {
-			WaitNode n = new WaitNode();
-			n.next = this.waiters;
-			this.waiters = n;
+	public CustTMessage get(long timeout, TimeUnit unit) throws InterruptedException, TimeoutException, ExecutionException {
+		if (Thread.interrupted()) {
+			throw new InterruptedException();
 		}
-		LockSupport.parkNanos(unit.toNanos(timeout));
-		return isDone() ? ((DoneFutureResult<CustTMessage>) innerResult).getResult() : null;
+		//noinspection unchecked
+		FutureResult<CustTMessage> obj = innerResultOffset.get(this);
+		if (obj != null) {
+			return getDoneValue(obj);
+		}
+		return addAndWaitDone(unit.toNanos(timeout));
 	}
 
-	protected boolean set(CustTMessage msg) {
-		boolean v = innerResultOffset.compareAndSet(this, null, new DoneFutureResult<>(msg));
-		return v;
+	private CustTMessage addAndWaitDone() throws ExecutionException {
+		WaitNode newNode = new WaitNode();
+		boolean queued = false;
+		do {
+			queued = waitersOffset.compareAndSet(this, newNode.next = waiters, newNode);
+		} while (!queued);
+
+		LockSupport.park(this);
+
+		//noinspection unchecked
+		return getDoneValue(innerResultOffset.get(this));
 	}
 
-	protected void finishCompletion() {
+	private CustTMessage addAndWaitDone(long timeout) throws ExecutionException, TimeoutException {
+		long endNanos = timeout + System.nanoTime();
+
+		WaitNode newNode = new WaitNode();
+		boolean queued = false;
+		do {
+			queued = waitersOffset.compareAndSet(this, newNode.next = waiters, newNode);
+		} while (!queued);
+
+
+		long remainingNanos = endNanos - System.nanoTime();
+
+		if (remainingNanos >= 1000L) {
+			LockSupport.parkNanos(this, remainingNanos);
+			//noinspection unchecked
+			FutureResult<CustTMessage> obj = innerResultOffset.get(this);
+			if (obj != null) {
+				return this.getDoneValue(obj);
+			}
+		} else {
+			// 优化 < 1000L
+			while (remainingNanos > 0L) {
+				//noinspection unchecked
+				FutureResult<CustTMessage> obj = innerResultOffset.get(this);
+				if (obj != null) {
+					return this.getDoneValue(obj);
+				}
+				remainingNanos = endNanos - System.nanoTime();
+			}
+		}
+
+		throw new TimeoutException();
+	}
+
+	private CustTMessage getDoneValue(FutureResult<CustTMessage> obj) throws ExecutionException {
+		if (obj instanceof CancelFutureResult) {
+			throw cancellationExceptionWithCause(((CancelFutureResult) obj).cause);
+		} else if (obj instanceof DoneFutureResult) {
+			return ((DoneFutureResult<CustTMessage>) obj).result;
+		} else {
+			return null;
+		}
+	}
+
+	private CancellationException cancellationExceptionWithCause(Throwable cause) {
+		CancellationException exception = new CancellationException("Task was cancelled.");
+		exception.initCause(cause);
+		return exception;
+	}
+
+	private void finishCompletion() {
 		// assert state > COMPLETING;
 		for (WaitNode q; (q = waitersOffset.get(this)) != null; ) {
 			if (waitersOffset.compareAndSet(this, q, null)) {
@@ -119,37 +202,19 @@ public class ResponseFutureV2 implements Future<CustTMessage> {
 
 	private static class CancelFutureResult<T> implements FutureResult<T> {
 		boolean interrupt = false;
+		Exception cause = null;
 
-		public CancelFutureResult(boolean interrupt) {
+		CancelFutureResult(boolean interrupt) {
 			this.interrupt = interrupt;
+			this.cause = new CancellationException("Future.cancel() was called.");
 		}
 	}
 
 	private static class DoneFutureResult<T> implements FutureResult<T> {
 		T result;
 
-		public DoneFutureResult(T result) {
+		DoneFutureResult(T result) {
 			this.result = result;
-		}
-
-		public T getResult() {
-			return result;
-		}
-	}
-
-	private static Future<CustTMessage> doWork() {
-		return new ResponseFutureV2();
-	}
-
-	public static void main(String[] args) throws ExecutionException, InterruptedException, TimeoutException {
-		Future<CustTMessage> future = doWork();
-
-		System.out.println(" wait for ......... ");
-		CustTMessage r = future.get(5, TimeUnit.SECONDS);
-		if (r != null) {
-			System.out.println("r =>>>> " + r);
-		} else {
-			future.cancel(true);
 		}
 	}
 }
