@@ -116,7 +116,7 @@ public class NettyClient implements Closeable {
 		@Override
 		protected void channelRead0(ChannelHandlerContext ctx, CustTMessage msg) {
 			int id = msg.getSeqId();
-			Future<CustTMessage> responseFuture = responseTable.remove(id);
+			Future<CustTMessage> responseFuture = NettyClient.this.responseTable.remove(id);
 			if (responseFuture != null) {
 				logger.debug("receive request id:{} response data.", id);
 				((ResponseFutureV2) responseFuture).set(msg);
@@ -138,14 +138,18 @@ public class NettyClient implements Closeable {
 			request.setBody(null);
 			request.setLen(0);
 
-			channel.writeAndFlush(request).addListener((ChannelFutureListener) future -> {
-				if (future.isSuccess()) {
-					logger.debug("send Heartbeat to channel <{}> success.\nREQ:{}", future.channel(), request);
-					return;
-				}
-				logger.warn("send Heartbeat to channel <{}> failed.\nREQ:{}", future.channel(), request);
-			});
+			NettyClient.this.writeOneWayReq(request);
 		}
+	}
+
+	public void writeOneWayReq(final CustTMessage request) {
+		if (!(request.getType() == CustTType.ONEWAY || request.getType() == CustTType.HEARTBEAT)) {
+			throw new IllegalArgumentException("writeOneWayReq 只支持 CustMessage 类型 IN [ONEWAY,HEARTBEAT].");
+		}
+
+		if (!channel.isActive()) throw new TSendRequestException("channel is closed.");
+
+		channel.writeAndFlush(request).addListener(new LogRequestListener(request.toString()));
 	}
 
 	public CustTMessage writeReq(final CustTMessage request, final int timeout) throws TTimeoutException, TSendRequestException, TSerializeException {
@@ -170,22 +174,37 @@ public class NettyClient implements Closeable {
 		final ResponseFutureV2 responseFuture = new ResponseFutureV2(request.getSeqId());
 		responseTable.put(request.getSeqId(), responseFuture);
 
-		channel.writeAndFlush(request).addListener(new ChannelFutureListener() {
-			@Override
-			public void operationComplete(ChannelFuture nettyFuture) throws Exception {
-				if (nettyFuture.isSuccess()) {
-					logger.debug("write a request to channel <{}> success.\nREQ:{}", nettyFuture.channel(), request);
-				} else {
-					logger.error("write a request to channel <{}> failed.\nREQ:{}", nettyFuture.channel(), request);
-
-					boolean cancel = responseFuture.cancel(true);
-					if (cancel) {
-						responseTable.remove(responseFuture.getSeqId());
+		channel.writeAndFlush(request).addListeners(
+				new LogRequestListener(request.toString()),
+				new ChannelFutureListener() {
+					@Override
+					public void operationComplete(ChannelFuture nettyFuture) throws Exception {
+						if (!nettyFuture.isSuccess()) {
+							boolean cancel = responseFuture.cancel(true);
+							if (cancel) {
+								responseTable.remove(responseFuture.getSeqId());
+							}
+						}
 					}
 				}
-			}
-		});
+		);
 		return responseFuture;
 	}
 
+	private static class LogRequestListener implements ChannelFutureListener {
+		final String reqDesc;
+
+		LogRequestListener(String reqDesc) {
+			this.reqDesc = reqDesc;
+		}
+
+		@Override
+		public void operationComplete(ChannelFuture future) throws Exception {
+			if (future.isSuccess()) {
+				logger.debug("write a request to channel <{}> success.\nREQ:{}", future.channel(), reqDesc);
+			} else {
+				logger.error("write a request to channel <{}> failed.\nREQ:{}", future.channel(), reqDesc);
+			}
+		}
+	}
 }
