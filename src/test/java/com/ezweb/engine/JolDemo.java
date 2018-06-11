@@ -1,6 +1,5 @@
 package com.ezweb.engine;
 
-import com.ezweb.interview.shorturl.encode.H64;
 import org.openjdk.jol.info.ClassData;
 import org.openjdk.jol.layouters.CurrentLayouter;
 import sun.misc.Contended;
@@ -30,10 +29,6 @@ public class JolDemo {
 	 */
 
 	public static void main(String[] args) {
-		for (int i = 0; i < 100; ++i) {
-			String f = H64.long2Hex((long) i);
-			System.out.println("f = " + f);
-		}
 		/*
 		com.ezweb.demo.JolDemo$Item object internals:
 		 OFFSET  SIZE   TYPE DESCRIPTION                               VALUE
