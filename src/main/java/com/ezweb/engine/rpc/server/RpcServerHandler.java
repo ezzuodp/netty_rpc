@@ -27,6 +27,11 @@ public class RpcServerHandler extends AbsServerHandler {
 	}
 
 	@Override
+	protected void handleOneWayCustTMessage(ChannelHandlerContext ctx, CustTMessage request) {
+		super.handleOneWayCustTMessage(ctx, request);
+	}
+
+	@Override
 	protected CustTMessage handleCustTMessage(ChannelHandlerContext ctx, CustTMessage request) throws Exception {
 		CustTMessage response = null;
 		if (request.getType() == CustTType.CALL) {

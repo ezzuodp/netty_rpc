@@ -12,17 +12,22 @@ import io.netty.channel.SimpleChannelInboundHandler;
 public abstract class AbsServerHandler extends SimpleChannelInboundHandler<CustTMessage> {
 
 	@Override
-	protected void channelRead0(ChannelHandlerContext ctx, CustTMessage request) throws Exception {
+	protected final void channelRead0(ChannelHandlerContext ctx, CustTMessage request) throws Exception {
 		if (request.getType() == CustTType.HEARTBEAT) {
 			handleHeartBeatCustTMessage(ctx, request);
-			return;
+		} else if (request.getType() == CustTType.ONEWAY) {
+			handleOneWayCustTMessage(ctx, request);
+		} else {
+			CustTMessage response = handleCustTMessage(ctx, request);
+			if (response != null) ctx.writeAndFlush(response);
 		}
-		CustTMessage response = handleCustTMessage(ctx, request);
-		if (response != null) ctx.writeAndFlush(response);
 	}
 
 	protected void handleHeartBeatCustTMessage(ChannelHandlerContext ctx, CustTMessage request) {
 
+	}
+
+	protected void handleOneWayCustTMessage(ChannelHandlerContext ctx, CustTMessage request) {
 	}
 
 	protected abstract CustTMessage handleCustTMessage(ChannelHandlerContext ctx, CustTMessage request) throws Exception;
