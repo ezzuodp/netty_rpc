@@ -14,9 +14,14 @@ public class HelloImpl implements Hello {
 
 	@Override
 	public TimeResult say(List<String> name, long curTime) {
-		logger.info(" say ( {}, {} ).", name, curTime);
-		TimeResult r = new TimeResult(name.get(0), System.currentTimeMillis() - curTime);
-		if (r.getTime() % 2 == 0) throw new RuntimeException("打开数据库失败");
-		return r;
+		return aaaa();
+	}
+
+	private TimeResult aaaa() {
+		return bbbb();
+	}
+
+	private TimeResult bbbb() {
+		throw new IllegalArgumentException("打开数据库失败连接。。。。。。。。", null);
 	}
 }
