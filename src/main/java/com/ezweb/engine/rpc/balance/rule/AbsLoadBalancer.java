@@ -1,11 +1,10 @@
-package com.ezweb.engine.balance.rule;
+package com.ezweb.engine.rpc.balance.rule;
 
-import com.ezweb.engine.balance.LoadBalanceRule;
-import com.ezweb.engine.balance.Server;
+import com.ezweb.engine.rpc.balance.LoadBalanceRule;
+import com.ezweb.engine.rpc.balance.Server;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * @author zuodengpeng

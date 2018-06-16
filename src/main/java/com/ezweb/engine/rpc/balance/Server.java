@@ -1,4 +1,4 @@
-package com.ezweb.engine.balance;
+package com.ezweb.engine.rpc.balance;
 
 /**
  * 初始（weight, currentWeight = 0 )

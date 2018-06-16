@@ -1,6 +1,6 @@
-package com.ezweb.engine.balance.rule;
+package com.ezweb.engine.rpc.balance.rule;
 
-import com.ezweb.engine.balance.Server;
+import com.ezweb.engine.rpc.balance.Server;
 
 import java.util.List;
 

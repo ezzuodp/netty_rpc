@@ -1,9 +1,9 @@
 package com.ezweb.loadbalance;
 
-import com.ezweb.engine.balance.Server;
-import com.ezweb.engine.balance.rule.LvsRoundRobinBalancer;
-import com.ezweb.engine.balance.rule.NginxRoundRobinBalancer;
-import com.ezweb.engine.balance.rule.RoundRobinBalancer;
+import com.ezweb.engine.rpc.balance.Server;
+import com.ezweb.engine.rpc.balance.rule.LvsRoundRobinBalancer;
+import com.ezweb.engine.rpc.balance.rule.NginxRoundRobinBalancer;
+import com.ezweb.engine.rpc.balance.rule.RoundRobinBalancer;
 import com.google.common.collect.Lists;
 import org.apache.logging.log4j.util.Strings;
 import org.junit.Assert;
