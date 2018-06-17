@@ -45,8 +45,18 @@ public class ExceptionUtil {
 		}
 	}
 
-	public static void fillExceptionStackTrace(Throwable e) {
+	public static void fillExceptionStackTrace(Throwable e, String className, String method) {
+		// e.getStackTrace();
+
 		// TODO:优化堆栈信息
-		e.getStackTrace();
+		if (e != null) {
+			try {
+				e.setStackTrace(new StackTraceElement[]{
+						new StackTraceElement(className, method, "remoteFile", 0)
+				});
+			} catch (Exception e1) {
+				LOGGER.warn("replace remote exception stack fail!" + e1.getMessage());
+			}
+		}
 	}
 }

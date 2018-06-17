@@ -22,6 +22,6 @@ public class HelloImpl implements Hello {
 	}
 
 	private TimeResult bbbb() {
-		throw new IllegalArgumentException("打开数据库失败连接。。。。。。。。", null);
+		throw new IllegalArgumentException("打开数据库失败连接", null);
 	}
 }

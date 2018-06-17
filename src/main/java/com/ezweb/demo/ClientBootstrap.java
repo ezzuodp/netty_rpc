@@ -4,6 +4,7 @@ import com.ezweb.demo.simple.Hello;
 import com.ezweb.demo.simple.HelloAsync;
 import com.ezweb.demo.simple.TimeResult;
 import com.ezweb.engine.client.NettyClient;
+import com.ezweb.engine.exception.TBizException;
 import com.ezweb.engine.log.Log4j2System;
 import com.ezweb.engine.rpc.RpcProtocolCode;
 import com.ezweb.engine.rpc.client.AsyncRpcClient;
@@ -48,15 +49,17 @@ public class ClientBootstrap {
 
 				Hello helloProxy = rpcClient.createRef("/v1", Hello.class);
 
-				for (int i = 0; i < 1; ++i) {
+				for (int i = 0; i < 128; ++i) {
 					try {
 						TimeResult timeResult = helloProxy.say(Lists.newArrayList(
 								"interface say",
 								"sdfjaklsfasdfasdsf"
 						), System.currentTimeMillis());
 						logger.info("timeResult.num = {}, {}", i, timeResult.getTime());
+					} catch (TBizException e) {
+						logger.error("同步调用Biz异常:", e);
 					} catch (Exception e) {
-						logger.info("同步调用，返回异常:", e);
+						logger.error("同步调用Other异常:", e);
 					}
 				}
 			}

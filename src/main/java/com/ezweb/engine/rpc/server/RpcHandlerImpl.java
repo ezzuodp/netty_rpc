@@ -67,31 +67,34 @@ public class RpcHandlerImpl implements RpcHandler {
 				Object val = wrapper.invokeMethod(this.ref, request.getMethodName(), argTypes, request.getArguments());
 				rpcResponse.setValue(val);
 			} catch (InvocationTargetException e) {
-				// 生成异常堆栈.
-				ExceptionUtil.fillExceptionStackTrace(e.getTargetException());
-
 				LOGGER.error("call {}.{}{} exception: {} ",
 						this.getInterface().getName(),
 						request.getMethodName(), request.getMethodDesc(),
 						e.getTargetException().getMessage()
 				);
 
-				// e 是 InvocationTargetException
+				// 生成异常堆栈.
+				ExceptionUtil.fillExceptionStackTrace(e.getTargetException(), getInterface().getName(), request.getMethodName());
+
 				rpcResponse.setException(
-						new TBizException("" +
-								"call " +
-								this.getInterface().getName() + "." + request.getMethodName() +
-								"" + request.getMethodDesc() + " exception!",
+						new TBizException(
+								String.format("call %s.%s exception!", this.getInterface().getName(), request.getMethodName()),
 								e.getTargetException()
 						)
 				);
 			} catch (Exception e) {
-				// 不生成异常堆栈.
+				LOGGER.error("call {}.{}{} exception: {} ",
+						this.getInterface().getName(),
+						request.getMethodName(), request.getMethodDesc(),
+						e.getMessage()
+				);
+
+				// 生成异常堆栈.
+				ExceptionUtil.fillExceptionStackTrace(e, getInterface().getName(), request.getMethodName());
+
 				rpcResponse.setException(
-						new TBizException("" +
-								"call " +
-								this.getInterface().getName() + "." + request.getMethodName() +
-								"" + request.getMethodDesc() + " exception!",
+						new TBizException(
+								String.format("call %s.%s exception!", this.getInterface().getName(), request.getMethodName()),
 								e
 						)
 				);
