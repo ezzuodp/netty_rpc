@@ -46,21 +46,15 @@ public class RpcClient {
 		// 生成一个client invoker.
 		Proxy proxy = Proxy.getProxy(importInterface);
 
-		Invoker<T> invoker = new InvokerClientImpl<T>(importInterface, protocol, nettyClient);
-
 		//noinspection unchecked
-		return (T) proxy.newInstance(new InvocationHandlerImpl<T>(prefix, importInterface, invoker));
+		return (T) proxy.newInstance(new InvocationHandlerImpl<T>(prefix, importInterface, new InvokerClientImpl<T>(importInterface)));
 	}
 
-	private static class InvokerClientImpl<T> implements Invoker<T> {
+	protected class InvokerClientImpl<T> implements Invoker<T> {
 		private Class<T> type = null;
-		private RpcProtocolCode protocol = null;
-		private NettyClient client = null;
 
-		public InvokerClientImpl(Class<T> type, RpcProtocolCode protocol, NettyClient client) {
+		InvokerClientImpl(Class<T> type) {
 			this.type = type;
-			this.protocol = protocol;
-			this.client = client;
 		}
 
 		@Override
@@ -72,25 +66,30 @@ public class RpcClient {
 		public RpcResponse invoke(RpcRequest request) {
 			ByteBuffer reqBytes;
 			try {
-				reqBytes = protocol.encodeRequest(request);
+				reqBytes = getProtocol().encodeRequest(request);
 			} catch (Exception e) {
-				throw new TSerializeException(e.getMessage());
+				throw new TSerializeException("encode rpc request exception!", e);
+			}
+
+			CustTMessage req_msg = CustTMessage.newRequestMessage();
+			req_msg.setCodeType(getProtocol().codeType());
+			req_msg.setBody(reqBytes);
+			req_msg.setLen(reqBytes.limit());
+
+			CustTMessage resp_msg = null;
+			try {
+				resp_msg = getNettyClient().writeReq(req_msg, 10 * 1000);
+				// 所有异常全部 throw.
+			} catch (TSendRequestException | TTimeoutException e) {
+				throw e;
+			} catch (Exception t) {
+				throw new TSendRequestException("write rpc request exception!", t);
 			}
 
 			try {
-				CustTMessage req_msg = CustTMessage.newRequestMessage();
-				req_msg.setCodeType(protocol.codeType());
-				req_msg.setBody(reqBytes);
-				req_msg.setLen(reqBytes.limit());
-
-				CustTMessage res_msg = this.client.writeReq(req_msg, 10 * 1000);
-				RpcResponse response = protocol.decodeResponse(res_msg.getBody());
-				return response;
-				// 所有异常全部 throw.
-			} catch (TSendRequestException | TTimeoutException | TSerializeException e) {
-				throw e;
-			} catch (Throwable t) {
-				throw new TSendRequestException(t.getMessage());
+				return getProtocol().decodeResponse(resp_msg.getBody());
+			} catch (Exception t) {
+				throw new TSerializeException("decode rpc response exception!", t);
 			}
 		}
 	}

@@ -12,6 +12,7 @@ import com.google.common.collect.Maps;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.ConcurrentMap;
 
 /**
@@ -64,9 +65,25 @@ public class RpcHandlerImpl implements RpcHandler {
 				Class<?>[] argTypes = ReflectUtils.desc2classArray(request.getMethodDesc());
 				Object val = wrapper.invokeMethod(this.ref, request.getMethodName(), argTypes, request.getArguments());
 				rpcResponse.setValue(val);
-			} catch (Exception e) {
+			} catch (InvocationTargetException e) {
 				// e 是 InvocationTargetException
-				rpcResponse.setException(new TBizException(e.getCause().getMessage()));
+				rpcResponse.setException(
+						new TBizException(
+								"call " +
+										this.getInterface().getName() + "." + request.getMethodName() +
+										":" + request.getMethodDesc() + " exception!",
+								e.getCause()
+						)
+				);
+			} catch (Exception e) {
+				rpcResponse.setException(
+						new TBizException(
+								"call " +
+										this.getInterface().getName() + "." + request.getMethodName() +
+										":" + request.getMethodDesc() + " exception!",
+								e
+						)
+				);
 			}
 			return rpcResponse;
 		}
