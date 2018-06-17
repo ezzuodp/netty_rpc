@@ -8,6 +8,7 @@ import com.ezweb.engine.rpc.asm.ReflectUtils;
 import com.ezweb.engine.rpc.asm.Wrapper;
 import com.ezweb.engine.rpc.simple.Invoker;
 import com.ezweb.engine.rpc.simple.PrefixUtils;
+import com.ezweb.engine.util.ExceptionUtil;
 import com.google.common.collect.Maps;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,7 +21,7 @@ import java.util.concurrent.ConcurrentMap;
  * @version : 1.10
  */
 public class RpcHandlerImpl implements RpcHandler {
-	private final static Logger Logger = LoggerFactory.getLogger(RpcHandlerImpl.class);
+	private final static Logger LOGGER = LoggerFactory.getLogger(RpcHandlerImpl.class);
 	private ConcurrentMap<String, Invoker<?>> invokerMap = Maps.newConcurrentMap();
 
 	public RpcHandlerImpl() {
@@ -31,7 +32,7 @@ public class RpcHandlerImpl implements RpcHandler {
 	}
 
 	public <T> void addExport(String prefix, Class<T> interfaceClass, T interfaceInstance) {
-		Logger.info("导出:{}/{} ...", prefix, interfaceClass.getName());
+		LOGGER.info("导出:{}/{} ...", prefix, interfaceClass.getName());
 
 		Invoker<T> invoker = new SyncRpcHandlerImpl<T>(interfaceInstance, interfaceClass);
 		invokerMap.putIfAbsent(PrefixUtils.buildServiceUrl(prefix, interfaceClass), invoker);
@@ -66,21 +67,31 @@ public class RpcHandlerImpl implements RpcHandler {
 				Object val = wrapper.invokeMethod(this.ref, request.getMethodName(), argTypes, request.getArguments());
 				rpcResponse.setValue(val);
 			} catch (InvocationTargetException e) {
+				// 生成异常堆栈.
+				ExceptionUtil.fillExceptionStackTrace(e.getTargetException());
+
+				LOGGER.error("call {}.{}{} exception: {} ",
+						this.getInterface().getName(),
+						request.getMethodName(), request.getMethodDesc(),
+						e.getTargetException().getMessage()
+				);
+
 				// e 是 InvocationTargetException
 				rpcResponse.setException(
-						new TBizException(
+						new TBizException("" +
 								"call " +
-										this.getInterface().getName() + "." + request.getMethodName() +
-										":" + request.getMethodDesc() + " exception!",
-								e.getCause()
+								this.getInterface().getName() + "." + request.getMethodName() +
+								"" + request.getMethodDesc() + " exception!",
+								e.getTargetException()
 						)
 				);
 			} catch (Exception e) {
+				// 不生成异常堆栈.
 				rpcResponse.setException(
-						new TBizException(
+						new TBizException("" +
 								"call " +
-										this.getInterface().getName() + "." + request.getMethodName() +
-										":" + request.getMethodDesc() + " exception!",
+								this.getInterface().getName() + "." + request.getMethodName() +
+								"" + request.getMethodDesc() + " exception!",
 								e
 						)
 				);

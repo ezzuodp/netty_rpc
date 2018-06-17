@@ -84,6 +84,7 @@ abstract class KryoFactory {
         SynchronizedCollectionsSerializer.registerSerializers(kryo);
 
         // now just added some very common classes
+        kryo.register(java.lang.StackTraceElement.class, new StackTraceElementSerializer());
         // TODO optimization
         kryo.register(HashMap.class);
         kryo.register(ArrayList.class);

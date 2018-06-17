@@ -48,7 +48,7 @@ public class ClientBootstrap {
 
 				Hello helloProxy = rpcClient.createRef("/v1", Hello.class);
 
-				for (int i = 0; i < 128; ++i) {
+				for (int i = 0; i < 1; ++i) {
 					try {
 						TimeResult timeResult = helloProxy.say(Lists.newArrayList(
 								"interface say",
@@ -61,7 +61,7 @@ public class ClientBootstrap {
 				}
 			}
 
-			{
+			/*{
 				AsyncRpcClient rpcClient = new AsyncRpcClient(8);
 
 				rpcClient.setProtocol(protocol);
@@ -98,7 +98,7 @@ public class ClientBootstrap {
 					timeResultFuture.whenCompleteAsync(new ConsumerImpl(i), async_pool);
 					if (j % 32 == 0) TimeUnit.SECONDS.sleep(1L); // 并发32个.
 				}
-			}
+			}*/
 			TimeUnit.SECONDS.sleep(2L);
 
 		} finally {
