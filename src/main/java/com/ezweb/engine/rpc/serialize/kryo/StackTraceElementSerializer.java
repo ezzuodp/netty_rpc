@@ -5,8 +5,6 @@ import com.esotericsoftware.kryo.Serializer;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 
-import java.util.List;
-
 /**
  * @author : zuodp
  * @version : 1.10
@@ -14,14 +12,14 @@ import java.util.List;
 public class StackTraceElementSerializer extends Serializer<StackTraceElement> {
 	@Override
 	public void write(Kryo kryo, Output output, StackTraceElement stackTraceElement) {
-		output.writeString(stackTraceElement.getClassName());
-		output.writeString(stackTraceElement.getMethodName());
-		output.writeString(stackTraceElement.getFileName());
-		output.writeInt(stackTraceElement.getLineNumber());
+		output.writeAscii(stackTraceElement.getClassName());
+		output.writeAscii(stackTraceElement.getMethodName());
+		output.writeAscii(stackTraceElement.getFileName());
+		output.writeVarInt(stackTraceElement.getLineNumber(), true);
 	}
 
 	@Override
 	public StackTraceElement read(Kryo kryo, Input input, Class<StackTraceElement> aClass) {
-		return new StackTraceElement(input.readString(), input.readString(), input.readString(), input.readInt());
+		return new StackTraceElement(input.readString(), input.readString(), input.readString(), input.readVarInt(true));
 	}
 }
