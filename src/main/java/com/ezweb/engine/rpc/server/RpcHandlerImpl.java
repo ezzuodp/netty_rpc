@@ -73,8 +73,8 @@ public class RpcHandlerImpl implements RpcHandler {
 						e.getTargetException().getMessage()
 				);
 
-				// 生成异常堆栈.
-				ExceptionUtil.fillExceptionStackTrace(e.getTargetException(), getInterface().getName(), request.getMethodName());
+				// 生成异常堆栈
+				ExceptionUtil.fillExceptionStackTrace(e.getTargetException(), this.ref.getClass().getName(), request.getMethodName());
 
 				rpcResponse.setException(
 						new TBizException(
@@ -90,7 +90,7 @@ public class RpcHandlerImpl implements RpcHandler {
 				);
 
 				// 生成异常堆栈.
-				ExceptionUtil.fillExceptionStackTrace(e, getInterface().getName(), request.getMethodName());
+				ExceptionUtil.fillExceptionStackTrace(e, this.ref.getClass().getName(), request.getMethodName());
 
 				rpcResponse.setException(
 						new TBizException(

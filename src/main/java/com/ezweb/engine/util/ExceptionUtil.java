@@ -35,7 +35,7 @@ public class ExceptionUtil {
 	/**
 	 * 覆盖给定exception的stack信息，server端产生业务异常时调用此类屏蔽掉server端的异常栈。
 	 */
-	public static void setMockStackTrace(Throwable e) {
+	private static void setDefaultStackTrace(Throwable e) {
 		if (e != null) {
 			try {
 				e.setStackTrace(REMOTE_MOCK_STACK);
@@ -45,17 +45,27 @@ public class ExceptionUtil {
 		}
 	}
 
-	public static void fillExceptionStackTrace(Throwable e, String className, String method) {
-		// e.getStackTrace();
-
-		// TODO:优化堆栈信息
+	public static void fillExceptionStackTrace(Throwable e, String className, String methodName) {
+		// 优化堆栈信息，只保留
 		if (e != null) {
-			try {
-				e.setStackTrace(new StackTraceElement[]{
-						new StackTraceElement(className, method, "remoteFile", 0)
-				});
-			} catch (Exception e1) {
-				LOGGER.warn("replace remote exception stack fail!" + e1.getMessage());
+			StackTraceElement[] xx = e.getStackTrace();
+			int i = xx == null ? -1 : xx.length - 1;
+			for (; i >= 0; --i) {
+				if (xx[i].getClassName().equals(className) && xx[i].getMethodName().equals(methodName)) {
+					break;
+				}
+			}
+			if (i < 0) {
+				setDefaultStackTrace(e);
+			} else {
+				StackTraceElement[] opt = new StackTraceElement[i + 1];
+				System.arraycopy(xx, 0, opt, 0, i + 1);
+
+				try {
+					e.setStackTrace(opt);
+				} catch (Exception e1) {
+					LOGGER.warn("replace remote exception stack fail!" + e1.getMessage());
+				}
 			}
 		}
 	}
