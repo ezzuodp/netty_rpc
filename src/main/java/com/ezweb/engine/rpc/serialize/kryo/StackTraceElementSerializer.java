@@ -10,6 +10,10 @@ import com.esotericsoftware.kryo.io.Output;
  * @version : 1.10
  */
 public class StackTraceElementSerializer extends Serializer<StackTraceElement> {
+	public StackTraceElementSerializer() {
+		this.setImmutable(false);
+	}
+
 	@Override
 	public void write(Kryo kryo, Output output, StackTraceElement stackTraceElement) {
 		output.writeAscii(stackTraceElement.getClassName());
