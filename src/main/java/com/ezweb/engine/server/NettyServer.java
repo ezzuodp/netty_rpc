@@ -91,9 +91,10 @@ public class NettyServer {
 				.option(ChannelOption.SO_REUSEADDR, true)
 				.childOption(ChannelOption.SO_KEEPALIVE, true)
 				.childOption(ChannelOption.TCP_NODELAY, true)
-				//.childOption(ChannelOption.SO_SNDBUF, nettyServerConfig.getServerSocketSndBufSize())
-				//.childOption(ChannelOption.SO_RCVBUF, nettyServerConfig.getServerSocketRcvBufSize())
-				.childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
+				.childOption(ChannelOption.SO_SNDBUF, 65535)
+				.childOption(ChannelOption.SO_RCVBUF, 65535)
+				.childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
+				.childOption(ChannelOption.WRITE_BUFFER_WATER_MARK, WriteBufferWaterMark.DEFAULT);
 
 		b.childHandler(new ChannelInitializer<SocketChannel>() {
 			@Override
