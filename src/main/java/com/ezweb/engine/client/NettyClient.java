@@ -138,6 +138,7 @@ public class NettyClient implements Closeable {
 			request.setBody(null);
 			request.setLen(0);
 
+			// TODO:保持心跳合约可用，写入心跳信息中带入的关键数据.
 			NettyClient.this.writeOneWayReq(request);
 		}
 	}

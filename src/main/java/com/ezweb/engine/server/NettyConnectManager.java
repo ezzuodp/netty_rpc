@@ -1,6 +1,5 @@
 package com.ezweb.engine.server;
 
-import com.ezweb.engine.CustTMessage;
 import com.ezweb.engine.util.RemotingUtil;
 import io.netty.channel.Channel;
 import org.slf4j.Logger;
@@ -28,7 +27,7 @@ public class NettyConnectManager {
 	public void leaseRenewal(Channel channel) {
 		LOGGER.info("NETTY SERVER PIPELINE: channel: {} Lease Renewal.", channel);
 		if (allChannel.contains(channel)) {
-
+			// TODO:保持心跳合约可用，处理心跳信息中带入的关键数据.
 		}
 	}
 

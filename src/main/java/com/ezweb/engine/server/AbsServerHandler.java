@@ -32,6 +32,7 @@ public abstract class AbsServerHandler extends SimpleChannelInboundHandler<CustT
 	}
 
 	protected final void handleHeartBeatCustTMessage(ChannelHandlerContext ctx, CustTMessage request) {
+		// TODO:可以扩展request，带上客户端的一些信息，作为心跳信息.
 		getNettyConnectManager().leaseRenewal(ctx.channel());
 	}
 

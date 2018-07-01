@@ -122,7 +122,7 @@ public class NettyServer {
 		}
 	}
 
-	class NettyConnectManageHandler extends ChannelDuplexHandler {
+	private class NettyConnectManageHandler extends ChannelDuplexHandler {
 		private NettyConnectManager connectManager;
 
 		public NettyConnectManageHandler(NettyConnectManager connectManager) {
