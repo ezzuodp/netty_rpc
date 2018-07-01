@@ -26,8 +26,6 @@ public abstract class AbsServerHandler extends SimpleChannelInboundHandler<CustT
 	protected final void channelRead0(ChannelHandlerContext ctx, CustTMessage request) throws Exception {
 		if (request.getType() == CustTType.HEARTBEAT) {
 			handleHeartBeatCustTMessage(ctx, request);
-		} else if (request.getType() == CustTType.ADMINCMD) {
-			handleAdminCommand(ctx, request);
 		} else {
 			handleCustTMessage(ctx, request);
 		}
@@ -35,11 +33,6 @@ public abstract class AbsServerHandler extends SimpleChannelInboundHandler<CustT
 
 	protected final void handleHeartBeatCustTMessage(ChannelHandlerContext ctx, CustTMessage request) {
 		getNettyConnectManager().leaseRenewal(ctx.channel());
-	}
-
-	protected final void handleAdminCommand(ChannelHandlerContext ctx, CustTMessage request) {
-		CustTMessage response = getNettyConnectManager().handleAdminCommand(ctx, request);
-		if (response != null) ctx.writeAndFlush(response);
 	}
 
 	protected abstract void handleCustTMessage(ChannelHandlerContext ctx, CustTMessage request) throws Exception;
