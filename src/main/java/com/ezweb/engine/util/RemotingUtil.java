@@ -16,7 +16,6 @@
  */
 package com.ezweb.engine.util;
 
-import com.ezweb.engine.server.NettyServer;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
@@ -24,16 +23,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.lang.reflect.Method;
-import java.net.*;
-import java.nio.channels.Selector;
+import java.net.Inet6Address;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketAddress;
 import java.nio.channels.SocketChannel;
-import java.nio.channels.spi.SelectorProvider;
 import java.util.ArrayList;
 import java.util.Enumeration;
 
 public class RemotingUtil {
-	private static Logger logger = LoggerFactory.getLogger(NettyServer.class);
+	private static Logger logger = LoggerFactory.getLogger(RemotingUtil.class);
 	private static final String OS_NAME = System.getProperty("os.name");
 
 	private static boolean isLinuxPlatform = false;
@@ -138,10 +137,10 @@ public class RemotingUtil {
 	}
 
 	public static void closeChannel(Channel channel) {
-		final String addrRemote = parseChannelRemoteAddr(channel);
 		channel.close().addListener(new ChannelFutureListener() {
 			@Override
 			public void operationComplete(ChannelFuture future) throws Exception {
+				final String addrRemote = parseChannelRemoteAddr(future.channel());
 				logger.info("closeChannel: close the connection to remote address[{}] result: {}", addrRemote, future.isSuccess());
 			}
 		});

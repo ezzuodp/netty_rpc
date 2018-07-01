@@ -7,7 +7,7 @@
         <Console name="Console-Appender" target="SYSTEM_OUT" follow="true">
             <PatternLayout>
                 <Pattern>
-                     %d{yyyy-MM-dd HH:mm:ss.SSS} [%-5level] [%t] %c{1} - %msg%n
+                     %d{yyyy-MM-dd HH:mm:ss.SSS} [%-5level] [%t] %logger{36} - %msg%n
                 </Pattern>>
             </PatternLayout>
         </Console>
@@ -15,7 +15,7 @@
                      filePattern="${log-path}/$${date:yyyy-MM}/app_${sys:applicationName}_%d{yyyy-MM-dd-HH}_%i.log.gz">
             <PatternLayout>
                 <Pattern>
-                    %d{yyyy-MM-dd HH:mm:ss.SSS} [%-5level] [%t] %c{1} - [TxId:%X{TxId}] %msg%n
+                    %d{yyyy-MM-dd HH:mm:ss.SSS} [%-5level] [%t] %logger{36} - [TxId:%X{TxId}] %msg%n
                 </Pattern>
             </PatternLayout>
             <Policies>
