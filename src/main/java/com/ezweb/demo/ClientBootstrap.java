@@ -41,7 +41,7 @@ public class ClientBootstrap {
 			socket_client.connect("localhost", 9000);
 			RpcProtocolCode protocol = new RpcProtocolCodeImpl(new KryoSerializationImpl());
 
-			{
+			/*{
 				RpcClient rpcClient = new RpcClient();
 
 				rpcClient.setProtocol(protocol);
@@ -62,7 +62,7 @@ public class ClientBootstrap {
 						logger.error("同步调用Other异常:", e);
 					}
 				}
-			}
+			}*/
 
 			/*{
 				AsyncRpcClient rpcClient = new AsyncRpcClient(8);
@@ -102,7 +102,7 @@ public class ClientBootstrap {
 					if (j % 32 == 0) TimeUnit.SECONDS.sleep(1L); // 并发32个.
 				}
 			}*/
-			TimeUnit.SECONDS.sleep(2L);
+			TimeUnit.SECONDS.sleep(4*60);
 
 		} finally {
 			socket_client.close();

@@ -7,8 +7,8 @@ package com.ezweb.engine;
  * @version : 1.10
  */
 public interface CustTType {
-	byte NONE = 0;
-
+	byte ADMINCMD = 0;  // 管理控制台
+	// RPC
 	byte CALL = 1;
 	byte REPLY = 2;
 	byte ONEWAY = 3;      // 请求后不需要等待近回值.

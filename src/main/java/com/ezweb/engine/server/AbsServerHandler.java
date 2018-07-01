@@ -11,24 +11,36 @@ import io.netty.channel.SimpleChannelInboundHandler;
  */
 public abstract class AbsServerHandler extends SimpleChannelInboundHandler<CustTMessage> {
 
+	private NettyConnectManager nettyConnectManager;
+
+	protected NettyConnectManager getNettyConnectManager() {
+		return nettyConnectManager;
+	}
+
+	protected AbsServerHandler setNettyConnectManager(NettyConnectManager nettyConnectManager) {
+		this.nettyConnectManager = nettyConnectManager;
+		return this;
+	}
+
 	@Override
 	protected final void channelRead0(ChannelHandlerContext ctx, CustTMessage request) throws Exception {
 		if (request.getType() == CustTType.HEARTBEAT) {
 			handleHeartBeatCustTMessage(ctx, request);
-		} else if (request.getType() == CustTType.ONEWAY) {
-			handleOneWayCustTMessage(ctx, request);
+		} else if (request.getType() == CustTType.ADMINCMD) {
+			handleAdminCommand(ctx, request);
 		} else {
-			CustTMessage response = handleCustTMessage(ctx, request);
-			if (response != null) ctx.writeAndFlush(response);
+			handleCustTMessage(ctx, request);
 		}
 	}
 
-	protected void handleHeartBeatCustTMessage(ChannelHandlerContext ctx, CustTMessage request) {
-
+	protected final void handleHeartBeatCustTMessage(ChannelHandlerContext ctx, CustTMessage request) {
+		getNettyConnectManager().leaseRenewal(ctx.channel());
 	}
 
-	protected void handleOneWayCustTMessage(ChannelHandlerContext ctx, CustTMessage request) {
+	protected final void handleAdminCommand(ChannelHandlerContext ctx, CustTMessage request) {
+		CustTMessage response = getNettyConnectManager().handleAdminCommand(ctx, request);
+		if (response != null) ctx.writeAndFlush(response);
 	}
 
-	protected abstract CustTMessage handleCustTMessage(ChannelHandlerContext ctx, CustTMessage request) throws Exception;
+	protected abstract void handleCustTMessage(ChannelHandlerContext ctx, CustTMessage request) throws Exception;
 }

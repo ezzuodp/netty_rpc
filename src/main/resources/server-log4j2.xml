@@ -31,7 +31,7 @@
         Logger使用<asyncRoot> or <asyncLogger>
     -->
     <Loggers>
-        <AsyncLogger name="com.ezweb" level="debug" additivity="true">
+        <AsyncLogger name="com.ezweb" level="info" additivity="true">
             <AppenderRef ref="App-File-Appender"/>
         </AsyncLogger>
         <Root level="info">

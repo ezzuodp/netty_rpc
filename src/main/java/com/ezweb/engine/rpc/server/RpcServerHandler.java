@@ -13,8 +13,6 @@ import org.slf4j.LoggerFactory;
  * @version : 1.10
  */
 public class RpcServerHandler extends AbsServerHandler {
-	private static final Logger LOGGER = LoggerFactory.getLogger(RpcServerHandler.class);
-
 	private RpcProtocolProcessor protocolProcessor = null;
 
 	public RpcServerHandler(RpcProtocolProcessor protocolProcessor) {
@@ -22,24 +20,19 @@ public class RpcServerHandler extends AbsServerHandler {
 	}
 
 	@Override
-	protected void handleHeartBeatCustTMessage(ChannelHandlerContext ctx, CustTMessage request) {
-		LOGGER.debug("receive channel: <{}> heartbeat req:{}.", ctx.channel(), request);
-	}
-
-	@Override
-	protected void handleOneWayCustTMessage(ChannelHandlerContext ctx, CustTMessage request) {
-		super.handleOneWayCustTMessage(ctx, request);
-	}
-
-	@Override
-	protected CustTMessage handleCustTMessage(ChannelHandlerContext ctx, CustTMessage request) throws Exception {
-		CustTMessage response = null;
+	protected void handleCustTMessage(ChannelHandlerContext ctx, CustTMessage request) throws Exception {
 		if (request.getType() == CustTType.CALL) {
 			// 这儿就可以另起 bizThread 进行 rpc 业务调用...
-			response = protocolProcessor.doProcess(request);
-
-			return response;
+			CustTMessage response = protocolProcessor.doProcess(request);
+			ctx.writeAndFlush(response);
+		} else if (request.getType() == CustTType.ONEWAY) {
+			handleOneWayCustTMessage(ctx, request);
+		} else {
+			throw new IllegalArgumentException("不支持的消息：" + request.toString());
 		}
-		throw new IllegalArgumentException("不支持的消息：" + request.toString());
+	}
+
+	protected void handleOneWayCustTMessage(ChannelHandlerContext ctx, CustTMessage request) {
+
 	}
 }

@@ -29,7 +29,7 @@ public class CustTMessage {
 
 	private short magic = (short) MAGIC;
 	private byte version = CustTVersion.VERSION_1;// 数据格式版本号：
-	private byte type = CustTType.NONE;           // 请求类型：CALL | REPLY | EXCEPTION
+	private byte type = CustTType.CALL;           // 请求类型：CALL | REPLY | EXCEPTION
 	private byte codeType = CustCodeType.NORMAL;  // 协议编码类型
 	private int seqId = 0;                        // 请求顺序号
 	private int len = 0;                          // body.len

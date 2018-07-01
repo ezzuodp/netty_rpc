@@ -107,7 +107,7 @@ public class NettyServer {
 						new CustTMessageEncoder(),
 						new IdleStateHandler(0, 0, 60, TimeUnit.SECONDS),
 						new NettyConnectManageHandler(connectManager),
-						serverHandlerCreator.create()
+						serverHandlerCreator.create().setNettyConnectManager(connectManager)
 				);
 			}
 		});
