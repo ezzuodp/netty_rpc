@@ -1,2 +1,2 @@
 # netty_thrift
-使用netty开发服务端和客户端的一个实现样例.
+基于netty4开发RPC（包含服务端和客户端Demo、异步RPC)样例.

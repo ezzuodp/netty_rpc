@@ -25,12 +25,11 @@ public class NettyByteBufTest {
 	static {
 		// 关闭回收机制.
 		System.setProperty("io.netty.recycler.maxCapacityPerThread", "0");
-		// 关闭线程局部缓存[]
-		/*
+
+		// 关闭线程局部缓存数量
 		System.setProperty("io.netty.allocator.tinyCacheSize", "0");
 		System.setProperty("io.netty.allocator.smallCacheSize", "0");
 		System.setProperty("io.netty.allocator.normalCacheSize", "0");
-		*/
 	}
 
 	@Test
@@ -51,7 +50,7 @@ public class NettyByteBufTest {
 					//buf.release();
 					bufs.add(buf);
 				}
-				System.out.println("alloc 100 * 1000 =>>>> ");
+				System.out.println("alloc 10 * 8192 =>>>> ");
 			}
 		}, "TestAllocThread");
 
@@ -70,7 +69,7 @@ public class NettyByteBufTest {
 					ByteBuf buf = bufs.get(j);
 					buf.release();
 				}
-				System.out.println("free 100 * 1000 =>>>> ");
+				System.out.println("free 10 * 8192 =>>>> ");
 			}
 		}, "TestFreeThread");
 
@@ -78,7 +77,7 @@ public class NettyByteBufTest {
 		t2.start();
 
 		// 关闭 局部线程池::: allocationsNormal = 100 * 1000, deallocationsNormal = 100 * 1000
-		TimeUnit.SECONDS.sleep(6L);
+		TimeUnit.SECONDS.sleep(3L);
 		PooledByteBufAllocatorMetric metric = alloc.metric();
 
 		int i = 0;
