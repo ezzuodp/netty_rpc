@@ -4,10 +4,10 @@ import com.ezweb.demo.simple.Hello;
 import com.ezweb.demo.simple.HelloExtImpl;
 import com.ezweb.demo.simple.HelloImpl;
 import com.ezweb.engine.log.Log4j2System;
-import com.ezweb.engine.rpc.RpcProtocolCode;
+import com.ezweb.engine.rpc.RpcProtocol;
 import com.ezweb.engine.rpc.serialize.kryo.KryoSerializationImpl;
 import com.ezweb.engine.rpc.server.RpcHandlerImpl;
-import com.ezweb.engine.rpc.server.RpcProtocolCodeImpl;
+import com.ezweb.engine.rpc.server.RpcProtocolImpl;
 import com.ezweb.engine.rpc.server.RpcServerHandlerCreator;
 import com.ezweb.engine.server.NettyServer;
 
@@ -24,7 +24,7 @@ public class ServerBootstrap {
 		rpcHandler.addExport("/v1", Hello.class, new HelloImpl());
 		rpcHandler.addExport("/v2", Hello.class, new HelloExtImpl());
 
-		RpcProtocolCode normalRpcCodeProtocol = new RpcProtocolCodeImpl(new KryoSerializationImpl());
+		RpcProtocol normalRpcCodeProtocol = new RpcProtocolImpl(() -> new KryoSerializationImpl());
 
 		RpcServerHandlerCreator serverHandlerCreator = new RpcServerHandlerCreator();
 		serverHandlerCreator.addRpcHandler(rpcHandler);

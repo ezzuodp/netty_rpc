@@ -5,7 +5,7 @@ import com.ezweb.engine.client.NettyClient;
 import com.ezweb.engine.exception.TSendRequestException;
 import com.ezweb.engine.exception.TSerializeException;
 import com.ezweb.engine.exception.TTimeoutException;
-import com.ezweb.engine.rpc.RpcProtocolCode;
+import com.ezweb.engine.rpc.RpcProtocol;
 import com.ezweb.engine.rpc.RpcRequest;
 import com.ezweb.engine.rpc.RpcResponse;
 import com.ezweb.engine.rpc.asm.Proxy;
@@ -20,13 +20,13 @@ import java.nio.ByteBuffer;
  */
 public class RpcClient {
 	private NettyClient nettyClient;
-	private RpcProtocolCode protocol;
+	private RpcProtocol protocol;
 
 	public void setNettyClient(NettyClient nettyClient) {
 		this.nettyClient = nettyClient;
 	}
 
-	public void setProtocol(RpcProtocolCode protocol) {
+	public void setProtocol(RpcProtocol protocol) {
 		this.protocol = protocol;
 	}
 
@@ -34,7 +34,7 @@ public class RpcClient {
 		return nettyClient;
 	}
 
-	public RpcProtocolCode getProtocol() {
+	public RpcProtocol getProtocol() {
 		return protocol;
 	}
 

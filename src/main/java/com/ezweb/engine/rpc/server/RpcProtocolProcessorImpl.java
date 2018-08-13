@@ -18,14 +18,14 @@ import java.util.concurrent.ConcurrentMap;
 public class RpcProtocolProcessorImpl implements RpcProtocolProcessor {
 	private static final Logger LOG = LoggerFactory.getLogger(RpcProtocolProcessorImpl.class);
 
-	private ConcurrentMap<Byte, RpcProtocolCode> rpcProtocols = Maps.newConcurrentMap();
+	private ConcurrentMap<Byte, RpcProtocol> rpcProtocols = Maps.newConcurrentMap();
 	private RpcHandler rpcHandler = null;
 
 	public RpcProtocolProcessorImpl() {
 	}
 
 	@Override
-	public void addRpcProtocol(RpcProtocolCode rpcProtocol) {
+	public void addRpcProtocol(RpcProtocol rpcProtocol) {
 		rpcProtocols.put(rpcProtocol.codeType(), rpcProtocol);
 	}
 
@@ -38,13 +38,13 @@ public class RpcProtocolProcessorImpl implements RpcProtocolProcessor {
 		return rpcHandler;
 	}
 
-	protected RpcProtocolCode getRpcProtocol(Byte protoType) {
+	protected RpcProtocol getRpcProtocol(Byte protoType) {
 		return rpcProtocols.get(protoType);
 	}
 
 	@Override
 	public CustTMessage doProcess(CustTMessage reqmsg) throws Exception {
-		RpcProtocolCode rpcCodeProtocol = getRpcProtocol(reqmsg.getCodeType());
+		RpcProtocol rpcCodeProtocol = getRpcProtocol(reqmsg.getCodeType());
 
 		RpcRequest req = null;
 		RpcResponse res = null;

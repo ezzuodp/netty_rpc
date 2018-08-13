@@ -7,7 +7,7 @@ import com.ezweb.engine.CustTMessage;
  * @version : 1.10
  */
 public interface RpcProtocolProcessor {
-	void addRpcProtocol(RpcProtocolCode rpcProtocol);
+	void addRpcProtocol(RpcProtocol rpcProtocol);
 
 	void setRpcHandler(RpcHandler rpcHandler);
 
