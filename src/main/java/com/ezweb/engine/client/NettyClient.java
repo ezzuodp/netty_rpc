@@ -153,6 +153,7 @@ public class NettyClient implements Closeable {
 		channel.writeAndFlush(request).addListener(new LogRequestListener(request.toString()));
 	}
 
+
 	public CustTMessage writeReq(final CustTMessage request, final int timeout) throws TTimeoutException, TSendRequestException, TSerializeException {
 
 		try {
@@ -167,6 +168,10 @@ public class NettyClient implements Closeable {
 		} catch (InterruptedException | ExecutionException e) {
 			throw new TSendRequestException(String.format("send request to the channel <%s> failed", channel), e);
 		}
+	}
+
+	public Future<CustTMessage> writeReqAsync(final CustTMessage request) {
+		return writeReqImpl(request);
 	}
 
 	private Future<CustTMessage> writeReqImpl(CustTMessage request) {
