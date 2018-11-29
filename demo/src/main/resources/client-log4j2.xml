@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN">
+    <Properties>
+        <Property name="log-path">logs</Property>
+    </Properties>
+    <Appenders>
+        <Console name="Console-Appender" target="SYSTEM_OUT" follow="true">
+            <PatternLayout>
+                <Pattern>
+                     %d{yyyy-MM-dd HH:mm:ss.SSS} [%-5level] [%t] %c{1} - %msg%n
+                </Pattern>>
+            </PatternLayout>
+        </Console>
+        <RollingFile name="App-File-Appender" fileName="${log-path}/app_${sys:applicationName}.log"
+                     filePattern="${log-path}/$${date:yyyy-MM}/app_${sys:applicationName}_%d{yyyy-MM-dd-HH}_%i.log.gz">
+            <PatternLayout>
+                <Pattern>
+                    %d{yyyy-MM-dd HH:mm:ss.SSS} [%-5level] [%t] %c{1} - [TxId:%X{TxId}] %msg%n
+                </Pattern>
+            </PatternLayout>
+            <Policies>
+                <SizeBasedTriggeringPolicy size="10 MB"/>
+            </Policies>
+        </RollingFile>
+    </Appenders>
+    <Loggers>
+        <AsyncLogger name="com.ezweb" level="debug" additivity="true">
+            <AppenderRef ref="App-File-Appender"/>
+        </AsyncLogger>
+        <Root level="info">
+            <AppenderRef ref="Console-Appender"/>
+        </Root>
+    </Loggers>
+</Configuration>
