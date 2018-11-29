@@ -63,6 +63,37 @@
 					</execution>
 				</executions>
 			</plugin>
+			<!-- 2. Phase process-classes: do the bytecode magic -->
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>exec-maven-plugin</artifactId>
+				<version>1.6.0</version>
+				<executions>
+					<execution>
+						<phase>compile</phase> <!-- 要绑定到的生命周期的阶段 -->
+						<goals>
+							<goal>java</goal>  <!-- 要绑定的插件的目标 -->
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<executable>java</executable> <!-- executable指的是要执行什么样的命令 -->
+					<mainClass>
+						com.ezweb.demo.assist.JavassistTransformer
+					</mainClass>
+					<arguments>
+						<argument>${project.build.outputDirectory}</argument>
+					</arguments>
+					<includePluginDependencies>true</includePluginDependencies>
+				</configuration>
+				<dependencies>
+					<dependency>
+						<groupId>org.javassist</groupId>
+						<artifactId>javassist</artifactId>
+						<version>3.20.0-GA</version>
+					</dependency>
+				</dependencies>
+			</plugin>
 			<plugin>
 				<artifactId>maven-assembly-plugin</artifactId>
 				<executions>

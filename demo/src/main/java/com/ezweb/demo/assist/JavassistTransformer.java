@@ -1,4 +1,4 @@
-package com.ezweb.engine.rpc.annotation;
+package com.ezweb.demo.assist;
 
 /**
  * <一句话说明功能>
@@ -39,10 +39,5 @@ public class JavassistTransformer {
 				"public String say() {return \"HACKED BY JSFELCHECK \" + super.toString();}", nodeClass);
 		nodeClass.addMethod(toString);
 		return nodeClass;
-	}
-
-	@Override
-	public String toString() {
-		return "HACKED BY JSFELCHECK " + super.toString();
 	}
 }

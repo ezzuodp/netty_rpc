@@ -1,4 +1,4 @@
-package com.ezweb.engine.rpc.annotation;
+package com.ezweb.demo.assist;
 
 /**
  * Helper class to be injected into jasper-el to re-implement some of its
