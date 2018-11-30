@@ -32,8 +32,8 @@ import java.util.concurrent.CompletableFuture;
 public class RpcAsyncProcessor extends AbstractProcessor {
 	private final static String ASYNC = "Async";
 	// 直接源码目录
-	private final static String TARGET_DIR = "src/main/java/";
-	// private final static String TARGET_DIR = "target/generated-sources/annotations/";
+//	private final static String TARGET_DIR = "src/main/java/";
+	 private final static String TARGET_DIR = "target/generated-sources/annotations/";
 
 	public RpcAsyncProcessor() {
 	}
@@ -46,7 +46,6 @@ public class RpcAsyncProcessor extends AbstractProcessor {
 		} else { // use jvm option -DmotanGeneratePath=xxx
 			TARGET_DIR = System.getProperty(GENERATE_PATH_KEY, "target/generated-sources/annotations/");
 		}*/
-
 		processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, "MotanAsyncProcessor Create Path:" + TARGET_DIR);
 
 	}
