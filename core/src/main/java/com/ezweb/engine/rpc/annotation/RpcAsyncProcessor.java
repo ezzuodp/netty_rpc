@@ -109,12 +109,13 @@ public class RpcAsyncProcessor extends AbstractProcessor {
 
 			// typeElement ==> Symbol.ClassSymbol.class
 			JavaFileObject sourcefile = getFieldFile(interfaceClazz, "sourcefile");
-			JavaFileObject classfile = getFieldFile(interfaceClazz, "classfile");
+			String rpcFullFile = sourcefile.getName();
+			int l = rpcFullFile.lastIndexOf("src/main/java");
+			// rpcFile   ==> src/main/java
+			// writeFile ==> target/generated-sources/annotations/
+			String genDir = rpcFullFile.substring(0, l);
 
-			System.out.println("sourcefile = " + sourcefile);
-			System.out.println("classfile  = " + classfile);
-
-			javaFile.writeTo(new File(System.getProperty("basedir"), TARGET_DIR));
+			javaFile.writeTo(new File(genDir, TARGET_DIR));
 
 			processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, "MotanAsyncProcessor process : " + className + " success.");
 
