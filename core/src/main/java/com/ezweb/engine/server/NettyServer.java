@@ -1,7 +1,9 @@
 package com.ezweb.engine.server;
 
+import com.ezweb.engine.CustTMessage;
 import com.ezweb.engine.CustTMessageDecoder;
 import com.ezweb.engine.CustTMessageEncoder;
+import com.ezweb.engine.CustTType;
 import com.ezweb.engine.util.RemotingUtil;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
@@ -107,7 +109,7 @@ public class NettyServer {
 						new CustTMessageEncoder(),
 						new IdleStateHandler(0, 0, 60, TimeUnit.SECONDS),
 						new NettyConnectManageHandler(connectManager),
-						serverHandlerCreator.create().setNettyConnectManager(connectManager)
+						serverHandlerCreator.create()
 				);
 			}
 		});
@@ -150,6 +152,15 @@ public class NettyServer {
 			}
 
 			super.userEventTriggered(ctx, evt);
+		}
+
+		@Override
+		public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+			if (msg instanceof CustTMessage && ((CustTMessage) msg).getType() == CustTType.HEARTBEAT) {
+				this.connectManager.leaseRenewal(ctx.channel());
+			} else {
+				super.channelRead(ctx, msg);
+			}
 		}
 
 		@Override

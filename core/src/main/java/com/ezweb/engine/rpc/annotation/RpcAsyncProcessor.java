@@ -22,7 +22,9 @@ import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.*;
 import javax.tools.Diagnostic;
+import javax.tools.JavaFileObject;
 import java.io.File;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -33,7 +35,7 @@ public class RpcAsyncProcessor extends AbstractProcessor {
 	private final static String ASYNC = "Async";
 	// 直接源码目录
 //	private final static String TARGET_DIR = "src/main/java/";
-	 private final static String TARGET_DIR = "target/generated-sources/annotations/";
+	private final static String TARGET_DIR = "target/generated-sources/annotations/";
 
 	public RpcAsyncProcessor() {
 	}
@@ -82,9 +84,11 @@ public class RpcAsyncProcessor extends AbstractProcessor {
 	}
 
 	private void writeAsyncClass(Element elem) throws Exception {
-
 		if (elem.getKind().isInterface()) {
 			TypeElement interfaceClazz = (TypeElement) elem;
+
+			PackageElement packageOf = processingEnv.getElementUtils().getPackageOf(interfaceClazz);
+
 			String className = interfaceClazz.getSimpleName().toString();
 			TypeSpec.Builder classBuilder =
 					TypeSpec.interfaceBuilder(className + ASYNC).addModifiers(Modifier.PUBLIC)
@@ -101,16 +105,28 @@ public class RpcAsyncProcessor extends AbstractProcessor {
 			// addSuperInterfaceMethods(interfaceClazz.getInterfaces(), classBuilder);
 
 			// write class
-			JavaFile javaFile =
-					JavaFile.builder(processingEnv.getElementUtils().getPackageOf(interfaceClazz).getQualifiedName().toString(),
-							classBuilder.build()).build();
+			JavaFile javaFile = JavaFile.builder(packageOf.getQualifiedName().toString(), classBuilder.build()).build();
+
+			// typeElement ==> Symbol.ClassSymbol.class
+			JavaFileObject sourcefile = getFieldFile(interfaceClazz, "sourcefile");
+			JavaFileObject classfile = getFieldFile(interfaceClazz, "classfile");
+
+			System.out.println("sourcefile = " + sourcefile);
+			System.out.println("classfile  = " + classfile);
 
 			javaFile.writeTo(new File(System.getProperty("basedir"), TARGET_DIR));
 
+			processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, "MotanAsyncProcessor process : " + className + " success.");
+
 		} else {
-			processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE,
-					"MotanAsyncProcessor not process, because " + elem.toString() + " not a interface.");
+			processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, "MotanAsyncProcessor not process, because " + elem.toString() + " not a interface.");
 		}
+	}
+
+	private JavaFileObject getFieldFile(TypeElement typeElement, String fieldName) throws NoSuchFieldException, IllegalAccessException {
+		// typeElement ==> Symbol.ClassSymbol.class
+		Field field = typeElement.getClass().getField(fieldName);
+		return (JavaFileObject) field.get(typeElement);
 	}
 
 	private void addMethods(TypeElement interfaceClazz, TypeSpec.Builder classBuilder) {

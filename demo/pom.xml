@@ -58,9 +58,6 @@
 						<goals>
 							<goal>compile</goal>       <!-- 要绑定的插件的目标 -->
 						</goals>
-						<configuration>
-							<fork>true</fork> <!-- fork := true -->
-						</configuration>
 					</execution>
 				</executions>
 			</plugin>
