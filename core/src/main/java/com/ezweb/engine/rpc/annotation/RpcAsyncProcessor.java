@@ -24,8 +24,8 @@ import java.util.concurrent.CompletableFuture;
 public class RpcAsyncProcessor extends AbstractProcessor {
 	private final static String ASYNC = "Async";
 	// 直接源码目录
-//	private final static String TARGET_DIR = "src/main/java/";
-	private final static String TARGET_DIR = "target/generated-sources/annotations/";
+	private final static String TARGET_DIR = "src/main/java/";
+	// private final static String TARGET_DIR = "target/generated-sources/annotations/";
 
 	public RpcAsyncProcessor() {
 	}
@@ -126,7 +126,11 @@ public class RpcAsyncProcessor extends AbstractProcessor {
 			for (Element e : elements) {
 				if (ElementKind.METHOD.equals(e.getKind())) {
 					ExecutableElement method = (ExecutableElement) e;
-
+					//
+					// 可以通过:
+					// MethodTree methodTree = Trees.instance(this.processingEnv).getTree(method);
+					// 得到<< Method代码内容, methodTree.getBody() >>
+					//
 					MethodSpec.Builder methodBuilder =
 							MethodSpec.methodBuilder(method.getSimpleName().toString())
 									.addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
